@@ -1,0 +1,8 @@
+{%extends 'template.html'%}
+{%block title%} Registration Message {%endblock%}
+{%block body_additions%}
+<div class="alert alert-{{alert_type}}" role="alert">
+    {{message}}
+</div>
+  
+{%endblock%}

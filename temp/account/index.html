@@ -1,0 +1,59 @@
+{%extends 'template.html'%}
+
+{%block title %}User account{%endblock%}
+
+{%block body_additions%}
+<div class="d-flex align-items-start">
+    <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile"
+            type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Profile</button>
+        <button class="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages"
+            type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">Messages</button>
+        <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings"
+            type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">Settings</button>
+        <button class="nav-link" id="v-pills-my-ai-tab" data-bs-toggle="pill" data-bs-target="#v-pills-my-ai"
+            type="button" role="tab" aria-controls="v-pills-my-ai" aria-selected="false">My AI</button>
+    </div>
+    <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel"
+            aria-labelledby="v-pills-profile-tab" tabindex="0">
+
+
+
+
+        </div>
+        <div class="tab-pane fade" id="v-pills-disabled" role="tabpanel" aria-labelledby="v-pills-disabled-tab"
+            tabindex="0">...</div>
+        <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab"
+            tabindex="0">...</div>
+        <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab"
+            tabindex="0">...</div>
+        <div class="tab-pane fade" id="v-pills-my-ai" role="tabpanel" aria-labelledby="v-pills-my-ai-tab" tabindex="0">
+            <form method="post" action="/ai/upload" enctype="multipart/form-data">
+                <input type="text" placeholder="Name of your AI" name="ai_name"> 
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Add an AI</label>
+                    <input class="form-control" type="file" name="file">
+                    
+                </div>
+                <button type="submit">Add AI</button>
+            </form>
+            <br>
+            <form action="/ai/remove" method="post">
+                <h3>Remove an AI</h3>
+                <select class="form-select" name="removed_ai">
+                    {%for ai in ais:%}
+                    <option value="{{ai.name}}">{{ai.name}}</option>
+                    {%endfor%}
+                    
+                </select>
+
+                <button type="submit" class="btn btn-primary mb-3">Delete</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+{%endblock%}

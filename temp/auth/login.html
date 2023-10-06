@@ -1,0 +1,9 @@
+{%extends 'template.html'%}
+{%block title%} Login Page {%endblock%}
+{%block body_additions%}
+    <form method="post">
+        <input type="text" placeholder="Username" name="username">
+        <input type="password" placeholder="Password" name="password">
+        <button type="submit">Login</button>
+    </form>
+{%endblock%}
