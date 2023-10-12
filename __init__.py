@@ -39,14 +39,13 @@ def create_app():
             app.config['SOCKET_SIDS'][current_user.username] = request.sid
             print('request sid is', request.sid)
         @socketio.on('disconnect')
-        def disconnect(_):
+        def disconnect():
             if current_user.is_anonymous:
                 return
             user_sids = app.config['SOCKET_SIDS']
             if current_user.username in user_sids:
                 del user_sids[current_user.username]
     
-        socketio.run(app)
         
         
 
@@ -54,4 +53,5 @@ def create_app():
     return app
 
 if __name__ == '__main__':
-    create_app().run()
+    app = create_app()
+    app.config['SOCKETIO'].run(app)

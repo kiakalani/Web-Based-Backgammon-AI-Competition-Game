@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect
 from flask_login import current_user
 from flask import current_app
-from sqlalchemy import Column, String, text
+from sqlalchemy import Column, String, text, Integer
 from datetime import datetime
 from login import User
 
@@ -10,10 +10,12 @@ bp = Blueprint('message', __name__, url_prefix='/message')
 class Message(current_app.config['DB']['base']):
 
     __tablename__ = 'message'
-    sender = Column(String, primary_key=True)
-    receiver = Column(String, primary_key=True)
+    sender = Column(String)
+    receiver = Column(String)
     text = Column(String)
     date = Column(String)
+    msg_id = Column(Integer, primary_key=True)
+
 
     def __init__(self, sender, receiver, text, date):
         self.sender = sender
@@ -51,11 +53,27 @@ def messages():
     if current_user.is_anonymous:
         return redirect('/auth/signin')
     all_msg = current_app.config['DB']['session'].execute(text('SELECT id, username FROM user;')).all()
-    print(all_msg)
+    # dropping the current user as an option
+    all_msg = [a for a in all_msg if a[1] != current_user.username]
     
     return render_template('message/index.html', user=current_user, 
                            users=all_msg)
 @bp.route('/<id>')
 def message_by_id(id):
+    if current_user.is_anonymous:
+        return redirect('/')
+    db_session = current_app.config['DB']['session']
+    dest_user = db_session.execute(text(f'SELECT username FROM user WHERE id=:x'), {"x": id}).fetchall()
+    if not dest_user:
+        return 'Bad Request', 400
+    dest_user = dest_user[0][0]
+    if dest_user == current_user.username:
+        return redirect('/message')
+    # return dest_user
+    messages = db_session.execute(text(f"SELECT * FROM message WHERE (sender='{current_user.username}' AND receiver='{dest_user}') or (sender='{dest_user}' and receiver='{current_user.username}');")).all()
+
+
+    return render_template('message/message_page.html', messages=messages, receiver_name=dest_user, receiver_id=id)
+
     # Todo: Implement it so the user would be able to message through here.
     pass
