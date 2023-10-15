@@ -15,9 +15,11 @@ class Game:
         self.__turn = False
         self.__round = 1
         self.__board = []
-        self.__reset_board()
+        self.__board = [[] for i in range(24)]
+        self.__board[17] = ['white', 'white']
+        # self.__reset_board()
     
-    def __is_finishing(self, color):
+    def __is_finishing(self, color,  board):
         """
         This function returns true if the given color
         has collected all of their pieces into their
@@ -27,12 +29,12 @@ class Game:
         otherwise false
         """
         if color == 'white':
-            for i in range(6, 24):
-                if len(self.__board[i]) != 0 and self.__board[i][0] == 'white':
+            for i in range(18):
+                if len(board[i]) != 0 and board[i][0] == 'white':
                     return False
         elif color == 'black':
-            for i in range(18):
-                if len(self.__board[i]) != 0 and self.__board[i][0] == 'black':
+            for i in range(6, 24):
+                if len(board[i]) != 0 and board[i][0] == 'black':
                     return False
         return True
 
@@ -49,8 +51,6 @@ class Game:
         # correct
         
         if end > 0 and end < 24:
-            if end == 16:
-                    print('Color is', color, 'starting from', start)
             # This is the scenario where the pieces are the same color or position is empty
             if len(board[end]) == 0 or board[end][0] == color:
                 
@@ -58,7 +58,7 @@ class Game:
             # This will be hitting the oponent's piece and is valid
             elif len(board[end]) == 1 and board[end][0] != color:
                 return True
-        elif self.__is_finishing(color):
+        elif self.__is_finishing(color, board):
             # This means removing the piece in the exact position which should be
             # valid
             if end == 0 or end == 24:
@@ -89,6 +89,7 @@ class Game:
             for item in self.__board[i]:
                 cp_board[i].append(item)
         return cp_board
+    
     def get_valid_moves(self, dies, color):
         """
         A function that would provide all possible moves for 
@@ -103,38 +104,62 @@ class Game:
             if pos_len != 0 and color == self.__board[i][0]:
                 # prev_roll = 0
                 cp_board = self.__get_cp_board()
-                moved_pieces = [i]
-                # TODO: Proceed with the if statement to see if everything is valid
-                # The looping would become way too complex
-                # prev_roll += dice
-                # for j in range(len(dies)):
-                #     dice = dies[j]
 
-                    
-                #     dice_mv = i + move_dir * dice
-
-                #     # This means the player can move the piece to the new location
-                #     if len(cp_board[i]) != 0 and self.__move_is_valid(i, dice_mv, color, cp_board):
-                #         valid_moves[i].append(dice_mv)
-                #         tmp_piece = cp_board[i].pop()
-                #         if dice_mv >= 0 and dice_mv < 24:
-                #             cp_board[dice_mv].append(tmp_piece)
-                #             if len(moved_pieces) - 1 < len(dies):
-                #                 moved_pieces.append(dice_mv)
-                    
-                    
-                    # This means the previous move was acceptable and we can check for
-                    # the sum of the previous move with current move.
-                    # if j != 0 and len(valid_moves[i]) != 0:
-                    #     if i == 11:
-                    #         print('Sum is ', prev_roll)
-                    #     dice_mv = i + prev_roll * move_dir
-                        
-                    #     if self.__move_is_valid(i, dice_mv, color):
-                    #         valid_moves[i].append(dice_mv)
-                    #     else:
-                    #         prev_roll -= dice
-        return {key: value for key, value in valid_moves.items() if len(value) != 0}
+                if len(dies) == 2:
+                    first_dice = i + dies[0] * move_dir
+                    second_dice = i + dies[1] * move_dir
+                    sum_dice = i + (dies[0] + dies[1]) * move_dir
+                    if self.__move_is_valid(i, first_dice, color, cp_board):
+                        valid_moves[i].append({'pos': first_dice, 'value': 1})
+                    if self.__move_is_valid(i, second_dice, color, cp_board):
+                        valid_moves[i].append({'pos': second_dice, 'value': 1})
+                    if len(valid_moves[i]) != 0:
+                        tmp = cp_board[i].pop()
+                        cp_board[valid_moves[i][0]['pos']].append(tmp)
+                        if self.__move_is_valid(valid_moves[i][0]['pos'], sum_dice, color, cp_board):
+                            valid_moves[i].append({'pos': sum_dice, 'value': 2})
+                    # Consider the count of the pieces when doing this
+                else:
+                    dice_val = dies[0]
+                    dice_mv = i + dice_val * move_dir
+                    if self.__move_is_valid(i, dice_mv, color, cp_board):
+                        pos_len = len(cp_board[i])
+                        for j in range(min(4, pos_len)):
+                            valid_moves[i].append({'pos': dice_mv, 'value': j + 1})
+                    len_valids = len(valid_moves[i])
+                    if len_valids != 0:
+                        sum_dice = dice_mv
+                        # Current position
+                        for k in range(3):
+                            prev_iteration = [item for item in valid_moves[i]]
+                            cur_pos = valid_moves[i][0]['pos'] + k * dice_val * move_dir
+                            sum_dice += dice_val * move_dir
+                            c_board = self.__get_cp_board()
+                            # This should be sufficient for seeing whether the move would
+                            # allow emptying or not
+                            moving_pieces = min(2 + k, len(c_board[i]))
+                            for j in range(moving_pieces):
+                                c_board[i].pop()
+                                if cur_pos >= 0 and cur_pos < 24:
+                                    c_board[cur_pos].append(color)
+                            if self.__move_is_valid(dice_mv, sum_dice, color, c_board):
+                                for item in prev_iteration:
+                                    if item['pos'] == cur_pos:
+                                        for j in range(item['value'] + 1, 5):
+                                            valid_moves[i].append({'pos': sum_dice, 'value': j})
+        # Restructuring the data in a representative manner for the players
+        ret_dict = {}
+        for key, value in valid_moves.items():
+            ret_dict[key] = {}
+            for item in value:
+                if not ret_dict[key].get(item['pos']):
+                    ret_dict[key][item['pos']] = set()
+                ret_dict[key][item['pos']].add(item['value'])
+        for key, value in ret_dict.items():
+            for k, v in value.items():
+                value[k] = list(v)
+        return {key: value for key, value in ret_dict.items() if len(ret_dict[key]) != 0}
+        
 
             
                     
@@ -180,5 +205,4 @@ class Game:
 
 if __name__ == '__main__':
     game = Game('', '')
-    game.debug_board()
-    print(game.get_valid_moves([6, 1], 'white'))
+    import pprint; pprint.pprint(game.get_valid_moves([6, 6, 6, 6], 'white'))
