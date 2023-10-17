@@ -6,7 +6,9 @@ and creating the competition between two AIs
 """
 
 from random import randint
-
+# a better idea:
+# how about having the players sending their moves in array format
+# and you error check their moves
 
 class Game:
     def __init__(self, player1, player2) -> None:
@@ -16,7 +18,7 @@ class Game:
         self.__round = 1
         self.__board = []
         self.__board = [[] for i in range(24)]
-        self.__board[17] = ['white', 'white']
+        self.__board[17] = ['white', 'white', 'white']
         # self.__reset_board()
     
     def __is_finishing(self, color,  board):
@@ -130,19 +132,26 @@ class Game:
                     if len_valids != 0:
                         sum_dice = dice_mv
                         # Current position
+
                         for k in range(3):
+                            c_board = self.__get_cp_board()
+
                             prev_iteration = [item for item in valid_moves[i]]
                             cur_pos = valid_moves[i][0]['pos'] + k * dice_val * move_dir
                             sum_dice += dice_val * move_dir
-                            c_board = self.__get_cp_board()
                             # This should be sufficient for seeing whether the move would
                             # allow emptying or not
                             moving_pieces = min(2 + k, len(c_board[i]))
+                            # print(moving_pieces)
                             for j in range(moving_pieces):
                                 c_board[i].pop()
+                                print(cur_pos)
                                 if cur_pos >= 0 and cur_pos < 24:
                                     c_board[cur_pos].append(color)
+                            print(c_board)
+
                             if self.__move_is_valid(dice_mv, sum_dice, color, c_board):
+                                
                                 for item in prev_iteration:
                                     if item['pos'] == cur_pos:
                                         for j in range(item['value'] + 1, 5):
@@ -152,14 +161,33 @@ class Game:
         for key, value in valid_moves.items():
             ret_dict[key] = {}
             for item in value:
-                if not ret_dict[key].get(item['pos']):
-                    ret_dict[key][item['pos']] = set()
-                ret_dict[key][item['pos']].add(item['value'])
+                pos = item['pos'] if item['pos'] >= 0 and item['pos'] < 24 else 24 if item['pos'] > 23 else -1 
+                if not ret_dict[key].get(pos):
+                    ret_dict[key][pos] = set()
+                ret_dict[key][pos].add(item['value'])
         for key, value in ret_dict.items():
             for k, v in value.items():
                 value[k] = list(v)
         return {key: value for key, value in ret_dict.items() if len(ret_dict[key]) != 0}
         
+    def make_a_move(self, moves, dies, color):
+        # Error checking the given move
+        sum_moves = 0
+        for m in moves:
+            for mm in moves[m]:
+                if not self.__move_is_valid(m, mm, color, self.__board):
+                    return False
+                sum_moves += moves[m][mm]
+        if sum_moves != len(dies):
+            return False
+        # Making the moves
+        direction = -1 if color == 'black' else 1
+        for m in moves:
+            for mm in moves[m]:
+                if moves[mm][m] > 1:
+                    # Check the count of the moves
+                    # Place the pieces in their proper spot
+                    pass
 
             
                     
