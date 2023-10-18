@@ -1,7 +1,9 @@
+from testai import AIPlayer
+from random import randint
 class Game:
     def __init__(self, p1, p2) -> None:
-        self.__player1 = p1
-        self.__player2 = p2
+        self.__player1 = AIPlayer()
+        self.__player2 = AIPlayer()
         self.__turn = False
         self.__round = 1
         self.__board = []
@@ -48,7 +50,7 @@ class Game:
             cur_len = len(self.__board[i])
 
             if cur_len != 0:
-                num_pieces[self.__board[i]] += cur_len
+                num_pieces[self.__board[i][0]] += cur_len
         if num_pieces['white'] == 0:
             return 'white'
         elif num_pieces['black'] == 0:
@@ -119,14 +121,22 @@ class Game:
             if self.move_is_valid(start, finish, color, self.__board, dice):
                 # if the player is finishing up, we don't want to add the piece
                 # back to the board
-                if not self.__is_finishing(color, self.__board):
+                # hitting a piece takes place here
+                if finish != -1 and finish != 24:
+                    if len(self.__board[finish]) != 0 and self.__board[finish][0] != color and len(self.__board[finish]) == 1:
+                        self.__hits['black' if color != 'black' else 'white'] += 1
+                # The scenarios where the piece is not being removed
+                if not (self.__is_finishing(color, self.__board) and (finish == -1 or finish == 24)):
                     self.__board[finish].append(color)
+                # Determining whether we should pop the item or decrement the count
+                # of hit pieces
                 if start != -1 and start != 24:
                     # Making sure the piece is not hit
                     self.__board[start].pop()
                 elif self.__hits[color] > 0:
                     # putting the hit piece back
                     self.__hits[color] -= 1
+                
 
 
 
@@ -154,6 +164,37 @@ class Game:
                 up += str(len(self.__board[u_i])) + self.__board[u_i][0][0] + '  '
         print(up)
         print(down)
+        print('Black: ', self.__hits['black'], 'White:', self.__hits['white'])
+    def make_move_player(self, player, color, dies, hits):
+        if self.has_valid_moves(color, dies[0]) or self.has_valid_moves(color, dies[1]):
+            moves = player.make_a_move(self.get_board(), dies, color, hits)
+            if len(moves) != len(dies):
+                print('Error; wrong moves!')
+                exit(0)
+            for m in moves:
+                dice_val = 0
+                for k, v in m.items():
+                    dice_val = abs(v - k)
+                self.make_move(m, color, dice_val)
+
+    def roll_dies(self) -> [int]:
+        dies = [randint(1, 6), randint(1, 6)]
+        if dies[1] == dies[0]:
+            dies += [dies[0], dies[0]]
+        return dies
+    def run(self):
+        current_color = 'white'
+        winner = None
+        while winner == None:
+            dies = self.roll_dies()
+            self.make_move_player(self.__player1, 'white', dies, self.__hits['white'])
+            dies = self.roll_dies()
+            self.make_move_player(self.__player2, 'black', dies, self.__hits['black'])
+            winner = self.get_winner()
+            self.debug_board()
+        print('winner is', winner)
+
+            
              
     
 
@@ -162,10 +203,11 @@ class Game:
 # 2. Implement the checking for there as well with their choices
 if __name__ == '__main__':
     g = Game('', '')
-    g.make_move({0: 6}, 'black', 6)
-    g.make_move({0: 6}, 'black', 6)
-    g.make_move({6: 9}, 'black', 3)
-    g.make_move({6:9}, 'black', 3)
+    # g.make_move({0: 6}, 'black', 6)
+    # g.make_move({0: 6}, 'black', 6)
+    # g.make_move({6: 9}, 'black', 3)
+    # g.make_move({6:9}, 'black', 3)
 
-    g.debug_board()
+    # g.debug_board()
+    g.run()
 
