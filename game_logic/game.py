@@ -133,6 +133,7 @@ class Game:
                 if finish != -1 and finish != 24:
                     if len(board[finish]) != 0 and board[finish][0] != color and len(board[finish]) == 1:
                         hits['black' if color != 'black' else 'white'] += 1
+                        board[finish].pop()
                 # The scenarios where the piece is not being removed
                 if not (self.__is_finishing(color, board) and (finish == -1 or finish == 24)):
                     board[finish].append(color)
