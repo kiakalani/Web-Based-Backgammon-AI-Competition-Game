@@ -249,8 +249,8 @@ class Game:
         current_color = 'white'
         winner = None
         self.debug_board()
-        for i in range(10):
-        # while winner == None:
+        # for i in range(10):
+        while winner == None:
             dies = self.roll_dies()
             print(f'P1 ROLLED {dies}')
             self.make_move_player(self.__player1, 'white', dies, self.__hits['white'])
