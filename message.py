@@ -74,6 +74,3 @@ def message_by_id(id):
 
 
     return render_template('message/message_page.html', messages=messages, receiver_name=dest_user, receiver_id=id)
-
-    # Todo: Implement it so the user would be able to message through here.
-    pass

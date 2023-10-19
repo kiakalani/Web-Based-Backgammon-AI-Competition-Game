@@ -55,7 +55,33 @@ class Player:
                     return False
             return True
         return False
-    
+
+    def all_valid_moves(self, board: [[str]], dice: int, color: str, hits: int) -> [{int: int}]:
+        """
+        Getter for all of the valid moves for a given dice
+        """
+        direction = 1 if color == 'black' else -1
+        if hits > 0:
+            start_pos = 24 if color == 'white' else -1
+            if self.move_is_valid(start_pos, board, dice, color, hits):
+                return [{start_pos: dice}]
+            return []
+        valids = []
+        for i in range(24):
+            if len(board[i]) != 0 and board[i][0] == color:
+                if self.move_is_valid(i, board, dice, color, hits):
+                    # making sure the boundaries are correct
+                    valids.append({i: dice})
+        
+        return valids
+
+    def has_valid_moves(self, board: [[str]], dies: [int], color: str, hits: int) -> bool:
+        for d in dies:
+            for i in range(-1, 25):
+                if self.move_is_valid(i, board, d, color, hits):
+                    return True
+        return False
+
     def make_a_move(self, board: [[str]], dies:[int], color: str, hits: int) -> [{int: int}]:
         """
         This will be the function that would be called for
