@@ -10,6 +10,7 @@ class AIPlayer(Player):
         while self.has_valid_moves(board, dies, color, hits):
             for i in range(len(dies) - 1, -1, -1):
                 move = self.all_valid_moves(board, dies[i], color, hits)
+                print('All valid moves are', move)
                 if len(move) != 0:
                     moves.append(move[0])
                     for start, dice in move[0].items():

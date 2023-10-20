@@ -21,6 +21,7 @@ class Player:
     def move_is_valid(self, start: int, finish: int, color: str, board: [[str]], dice, hits:int) -> bool:
         
         # This takes care of verifying whether the piece has been hit
+        print(finish, ' is the finish index')
         if hits != 0:
             if color == 'black':
                 if start != -1:
@@ -42,21 +43,25 @@ class Player:
                 elif len(board[finish]) == 1 and board[finish][0] != color:
                     # This would be a hit
                     return True
-                else:
-                    return False
+                # else:
+                #     return False
             else:
                 return False
-        elif self.__is_finishing(color, board):
+        if self.__is_finishing(color, board):
+            print('Dealing with here at all?')
             direction = (1 if color == 'black' else -1)
             # This means the move is exact
-            if start + dice * direction == finish:
-                return True
+            
             if color == 'black':
+                if start + dice * direction == 24:
+                    return True
                 for i in range(18, start):
                     if len(board[i]) != 0 and board[i][0] == color:
                         return False
             else:
-                for i in range(5, start -1, -1):
+                if start + dice * direction == -1:
+                    return True
+                for i in range(start + 1, 6):
                     if len(board[i]) != 0 and board[i][0] == color:
                         return False
             # Checking to make sure there are no other valid moves from before

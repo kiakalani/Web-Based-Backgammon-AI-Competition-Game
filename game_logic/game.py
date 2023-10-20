@@ -58,25 +58,21 @@ class Game:
         return None
                 
     def move_is_valid(self, start: int, finish: int, color: str, board: [[str]], dice, hits=None) -> bool:
-        print('Move:', {start: dice})
         if hits == None:
             hits = self.__hits
         # This takes care of verifying whether the piece has been hit
         if hits[color] != 0:
             if color == 'black':
                 if start != -1:
-                    print('False -2')
                     return False
             elif color == 'white':
                 if start != 24:
-                    print('False -1')
                     return False
             # This means the hit piece can be reloacted to correct position
             if len(board[finish]) == 0 or board[finish][0] == color:
                 return True
             elif len(board[finish]) == 1 and board[finish][0] != color:
                 return True
-            print('False 1')
             return False
         if finish >= 0 and finish < 24 and start != 24 and start != -1:
         # This means a valid piece has been selected
@@ -86,13 +82,11 @@ class Game:
                 elif len(board[finish]) == 1 and board[finish][0] != color:
                     # This would be a hit
                     return True
-                else:
-                    print('False 2')
-                    return False
+                # else:
+                #     return False
             else:
-                print('false 3')
                 return False
-        elif self.__is_finishing(color, board):
+        if self.__is_finishing(color, board):
             direction = (1 if color == 'black' else -1)
             # This means the move is exact
             if start + dice * direction == finish:
@@ -100,31 +94,25 @@ class Game:
             if color == 'black':
                 for i in range(18, start):
                     if len(board[i]) != 0 and board[i][0] == color:
-                        print('false 4')
                         return False
             else:
-                for i in range(5, start -1, -1):
+                for i in range(start + 1, 6):
                     if len(board[i]) != 0 and board[i][0] == color:
-                        print('false 5')
                         return False
-            # Checking to make sure there are no other valid moves from before
-            # for i in range(start - direction, 6 if direction == -1 else 17, -direction):
-            #     if len(board[i]) != 0 and board[i][0] == color:
-            #         print('False 3')
-            #         return False
             return True
-        print('This?')
         return False
 
-    def has_valid_moves(self, color: str, dice: int, board=None) -> bool:
+    def has_valid_moves(self, color: str, dice: int, board=None, hits=None) -> bool:
         """
         This function returns true if there is a valid move
         with the given dice for the player otherwise false
         """
         if board == None:
             board = self.__board
+        if hits == None:
+            hits = self.__hits
         direction = 1 if color == 'black' else -1
-        if self.__hits[color] != 0:
+        if hits[color] != 0:
             pos = (dice * direction) + (-1 if color == 'black' else 24)
             if len(board[pos]) != 0 and board[pos][0] != color:
                 return False
@@ -133,7 +121,6 @@ class Game:
             for i in range(24):
                 if len(board[i]) != 0 and board[i][0] == color:
                     if self.move_is_valid(i, i + dice * direction, color, board, dice):
-                        print("Position", i, "With dice", dice, "is valid")
                         return True
             return False
             
@@ -162,10 +149,7 @@ class Game:
                         board[finish].pop()
                 # The scenarios where the piece is not being removed
                 if (finish >= 0 and finish < 24):
-                    print('Adding back?')
                     board[finish].append(color)
-                # if not (self.__is_finishing(color, board) and (finish == -1 or finish == 24)):
-                #     board[finish].append(color)
                 # Determining whether we should pop the item or decrement the count
                 # of hit pieces
                 if start != -1 and start != 24:
@@ -174,8 +158,6 @@ class Game:
                 elif hits[color] > 0:
                     # putting the hit piece back
                     hits[color] -= 1
-            else:
-                print('Not?')
 
                 
 
@@ -229,18 +211,15 @@ class Game:
                 self.make_move(m, color, dice, board_cp, hits)
                 dies_cp.remove(dice)
         for d in dies_cp:
-            if self.has_valid_moves(color, d, board_cp):
+            if self.has_valid_moves(color, d, board_cp, hits):
                 return False
         return True
 
 
     def make_player_move(self, player, color: str, dies: [int], hits: int):
         # Getting the moves of the player
-        print('---------------------')
-        print(f'Making move for {color}:')
         moves = player.make_a_move(self.get_board(), [d for d in dies], color, hits)
-        print(f'Moves are {moves}')
-        print(f'dies are {dies}')
+        print(f'Player chose {moves}')
         if not self.__dies_valid(dies, moves):
             print(f"Invalid dies detected for color {color}. Quitting!")
             self.debug_board()
@@ -255,96 +234,32 @@ class Game:
                 self.make_move(m, color, dice)
         self.debug_board()
 
-    def make_move_player(self, player, color, dies, hits):
-        # TODO: Figure out how to consider looking for the hits
-        # the rest seems to be considered
-        # Better idea: Rewrite this code and reorganize it and check every time whether everything
-        # is valid or not
-        if self.has_valid_moves(color, dies[0]) or self.has_valid_moves(color, dies[1]):
-            moves = player.make_a_move(self.get_board(), [d for d in dies], color, hits)
-            print('--------------------------------------')
-            print("Color is", color)
-            print("Moves are ", moves)
-            print("Dies are", dies)
-            count_dies = {}
-            for d in dies:
-                if not count_dies.get(d):
-                    count_dies[d] = 1
-                else:
-                    count_dies[d] += 1
-            for m in moves:
-                for k, v in m.items():
-                    if v not in dies:
-                        print(f'Invalid dice detected. Quitting\n{k} is not in {dies}')
-                        exit(0)
-                    count_dies[v] -= 1
-            check_moves = False
-            for k, v in count_dies.items():
-                if v < 0:
-                    print('Error; invalid moves detected')
-                    exit(0)
-                elif v > 0:
-                    check_moves = True
-            if check_moves:
-
-                board_cp = self.get_board()
-                hits = {k:v for k, v in self.__hits.items()}
-                count_dies = {}
-                for d in dies:
-                    if not count_dies.get(d):
-                        count_dies[d] = 1
-                    else:
-                        count_dies[d] += 1
-                for m in moves:
-                    if len(m) > 1:
-                        print("Invalid number of parameters")
-                        exit(0)
-                    for start, dice in m.items():
-                        end = min(24, max(-1, start + dice * (1 if color=='black' else -1)))
-
-                        if not self.move_is_valid(start, end, color, board_cp, dice):
-                            print(f'Error; invalid move {start} and {dice}')
-                            self.debug_board()
-                            exit(0)
-                        # end = start + max(24, min(-1, dice * (1 if color=='black' else -1)))
-                        self.make_move({start: end}, color, dice, board_cp, hits)
-                        count_dies[dice] -= 1
-                # getting the remaining dies
-                arr = []
-                for k, v in count_dies.items():
-                    for i in range(v):
-                        arr.append(k)
-                for d in arr:
-                    if self.has_valid_moves(color, d, board_cp):
-                        print(f'Missing moves; {color} is disqualified')
-                        self.debug_board()
-                        exit(0)
-            for m in moves:
-                dice_val = 0
-                for k, v in m.items():
-                    dice_val = v
-                self.make_move(m, color, dice_val)
-
     def roll_dies(self) -> [int]:
         dies = [randint(1, 6), randint(1, 6)]
         if dies[1] == dies[0]:
             dies += [dies[0], dies[0]]
         return dies
     def run(self):
-        current_color = 'white'
         winner = None
         self.debug_board()
         # for i in range(10):
-        while winner == None:
-            dies = self.roll_dies()
-            self.make_player_move(self.__player1, 'white', dies, self.__hits['white'])
-            dies = self.roll_dies()
-            self.make_player_move(self.__player2, 'black', dies, self.__hits['black'])
-            self.debug_board()
+        for i in range(5000000):
+            while winner == None:
+                dies = self.roll_dies()
+                print('-------')
+                print(f'Dies {dies} for White')
+                self.make_player_move(self.__player1, 'white', dies, self.__hits['white'])
+                dies = self.roll_dies()
+                print('-------')
+                print(f'Dies {dies} for black')
+                self.make_player_move(self.__player2, 'black', dies, self.__hits['black'])
+                self.debug_board()
 
-            winner = self.get_winner()
-        self.debug_board()
-        print('winner is', winner)
+                winner = self.get_winner()
+            self.debug_board()
+            print('winner is', winner)
+            winner = None
+            self.__reset_board()
 
             
              
