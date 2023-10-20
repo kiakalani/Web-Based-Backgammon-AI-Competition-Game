@@ -20,6 +20,8 @@ class AIPlayer(Player):
                             hits -= 1
                         end_pos = start + dice * (1 if color == 'black' else -1)
                         if end_pos >= 0 and end_pos < 24:
+                            if len(board[end_pos]) == 1 and color != board[end_pos][0]:
+                                board[end_pos].pop()
                             board[end_pos].append(color)
 
                     dies.pop(i)

@@ -18,11 +18,8 @@ class Player:
                 return False
         return True
 
-    def move_is_valid(self, start: int, board: [[str]], dice: int, color: str, hits: int) -> bool:
-        """
-        A function that indicates whether the given move is valid
-        """
-        finish = start + dice * (1 if color == 'black' else -1)
+    def move_is_valid(self, start: int, finish: int, color: str, board: [[str]], dice, hits:int) -> bool:
+        
         # This takes care of verifying whether the piece has been hit
         if hits != 0:
             if color == 'black':
@@ -34,6 +31,9 @@ class Player:
             # This means the hit piece can be reloacted to correct position
             if len(board[finish]) == 0 or board[finish][0] == color:
                 return True
+            elif len(board[finish]) == 1 and board[finish][0] != color:
+                return True
+            return False
         if finish >= 0 and finish < 24 and start != 24 and start != -1:
         # This means a valid piece has been selected
             if len(board[start]) != 0 and board[start][0] == color:
@@ -44,15 +44,26 @@ class Player:
                     return True
                 else:
                     return False
+            else:
+                return False
         elif self.__is_finishing(color, board):
             direction = (1 if color == 'black' else -1)
             # This means the move is exact
-            if finish == (-1 if color == 'white' else 24):
+            if start + dice * direction == finish:
                 return True
+            if color == 'black':
+                for i in range(18, start):
+                    if len(board[i]) != 0 and board[i][0] == color:
+                        return False
+            else:
+                for i in range(5, start -1, -1):
+                    if len(board[i]) != 0 and board[i][0] == color:
+                        return False
             # Checking to make sure there are no other valid moves from before
-            for i in range(start - direction, 6 if direction == -1 else 17, -direction):
-                if len(board[i]) != 0 and board[i][0] == color:
-                    return False
+            # for i in range(start - direction, 6 if direction == -1 else 17, -direction):
+            #     if len(board[i]) != 0 and board[i][0] == color:
+            #         print('False 3')
+            #         return False
             return True
         return False
 
@@ -63,13 +74,14 @@ class Player:
         direction = 1 if color == 'black' else -1
         if hits > 0:
             start_pos = 24 if color == 'white' else -1
-            if self.move_is_valid(start_pos, board, dice, color, hits):
+            if self.move_is_valid(start_pos, (start_pos + (dice * direction)), color, board, dice, hits):
                 return [{start_pos: dice}]
             return []
         valids = []
         for i in range(24):
             if len(board[i]) != 0 and board[i][0] == color:
-                if self.move_is_valid(i, board, dice, color, hits):
+                if self.move_is_valid(i, i + (dice * direction), color, board, dice, hits):
+                # if self.move_is_valid(i, i + (dice * direction), board, dice, color, hits):
                     # making sure the boundaries are correct
                     valids.append({i: dice})
         
@@ -77,9 +89,8 @@ class Player:
 
     def has_valid_moves(self, board: [[str]], dies: [int], color: str, hits: int) -> bool:
         for d in dies:
-            for i in range(-1, 25):
-                if self.move_is_valid(i, board, d, color, hits):
-                    return True
+            if len(self.all_valid_moves(board, d, color, hits)) != 0:
+                return True
         return False
 
     def make_a_move(self, board: [[str]], dies:[int], color: str, hits: int) -> [{int: int}]:
