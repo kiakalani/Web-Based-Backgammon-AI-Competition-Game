@@ -58,21 +58,25 @@ class Game:
         return None
                 
     def move_is_valid(self, start: int, finish: int, color: str, board: [[str]], dice, hits=None) -> bool:
+        print('Move:', {start: dice})
         if hits == None:
             hits = self.__hits
         # This takes care of verifying whether the piece has been hit
         if hits[color] != 0:
             if color == 'black':
                 if start != -1:
+                    print('False -2')
                     return False
             elif color == 'white':
                 if start != 24:
+                    print('False -1')
                     return False
             # This means the hit piece can be reloacted to correct position
             if len(board[finish]) == 0 or board[finish][0] == color:
                 return True
             elif len(board[finish]) == 1 and board[finish][0] != color:
                 return True
+            print('False 1')
             return False
         if finish >= 0 and finish < 24 and start != 24 and start != -1:
         # This means a valid piece has been selected
@@ -83,8 +87,10 @@ class Game:
                     # This would be a hit
                     return True
                 else:
+                    print('False 2')
                     return False
             else:
+                print('false 3')
                 return False
         elif self.__is_finishing(color, board):
             direction = (1 if color == 'black' else -1)
@@ -94,10 +100,12 @@ class Game:
             if color == 'black':
                 for i in range(18, start):
                     if len(board[i]) != 0 and board[i][0] == color:
+                        print('false 4')
                         return False
             else:
                 for i in range(5, start -1, -1):
                     if len(board[i]) != 0 and board[i][0] == color:
+                        print('false 5')
                         return False
             # Checking to make sure there are no other valid moves from before
             # for i in range(start - direction, 6 if direction == -1 else 17, -direction):
@@ -105,6 +113,7 @@ class Game:
             #         print('False 3')
             #         return False
             return True
+        print('This?')
         return False
 
     def has_valid_moves(self, color: str, dice: int, board=None) -> bool:
@@ -143,7 +152,7 @@ class Game:
         for start, d in move.items():
             finish = start + d * (1 if color == 'black' else -1)
             finish = max(-1, min(24, finish))
-            if self.move_is_valid(start, finish, color, board, dice):
+            if self.move_is_valid(start, finish, color, board, dice, hits=hits):
                 # if the player is finishing up, we don't want to add the piece
                 # back to the board
                 # hitting a piece takes place here
@@ -152,7 +161,8 @@ class Game:
                         hits['black' if color != 'black' else 'white'] += 1
                         board[finish].pop()
                 # The scenarios where the piece is not being removed
-                if not (self.__is_finishing(color, board) and (finish <= -1 or finish >= 24)):
+                if (finish >= 0 and finish < 24):
+                    print('Adding back?')
                     board[finish].append(color)
                 # if not (self.__is_finishing(color, board) and (finish == -1 or finish == 24)):
                 #     board[finish].append(color)
@@ -164,6 +174,8 @@ class Game:
                 elif hits[color] > 0:
                     # putting the hit piece back
                     hits[color] -= 1
+            else:
+                print('Not?')
 
                 
 
