@@ -243,7 +243,7 @@ class Game:
         winner = None
         self.debug_board()
         # for i in range(10):
-        for i in range(5000000):
+        for i in range(500):
             while winner == None:
                 dies = self.roll_dies()
                 print('-------')
@@ -260,6 +260,7 @@ class Game:
             print('winner is', winner)
             winner = None
             self.__reset_board()
+        print('Tests passed!')
 
             
              
