@@ -248,11 +248,11 @@ class Game:
                 dies = self.roll_dies()
                 print('-------')
                 print(f'Dies {dies} for White')
-                self.make_player_move(self.__player1, 'white', dies, self.__hits['white'])
+                self.make_player_move(self.__player1, 'white', dies, {k : v for k, v in self.__hits.items()})
                 dies = self.roll_dies()
                 print('-------')
                 print(f'Dies {dies} for black')
-                self.make_player_move(self.__player2, 'black', dies, self.__hits['black'])
+                self.make_player_move(self.__player2, 'black', dies, {k : v for k, v in self.__hits.items()})
                 self.debug_board()
 
                 winner = self.get_winner()
@@ -264,7 +264,10 @@ class Game:
 
             
              
-    
+# TODO: get player.py and game.py into a container.
+# You can also save the moves they make into the db.
+# With that you can have a match endpoint and show the
+# players how their AI behaves against other AIs
 
 # strategy to get all valid moves:
 # 1. Create a copy of the board for the client side

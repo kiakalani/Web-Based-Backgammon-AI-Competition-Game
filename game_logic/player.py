@@ -1,5 +1,6 @@
 from random import randint
-
+import random
+import math
 class Player:
     """
     An abstract class for the player instances that would be
@@ -17,6 +18,29 @@ class Player:
             if len(board[index]) != 0 and color == board[index][0]:
                 return False
         return True
+    def make_a_mock_move(self, move: {int: int}, board: [[str]], hits: {str: int}, color: str) -> None:
+        """
+        A helper function for allowing the players to make a mock move
+        to see the upcoming valid moves afterward.
+        :param: move: the move dictionary.
+        :param: board: the mock board that was sent from the game class
+        :param: hits: the mock hits object
+        """
+        for start, dice in move.items():
+            if start > -1 and start < 24:
+                board[start].pop()
+            else:
+                hits[color] -= 1
+            end_pos = start + dice * (1 if color == 'black' else -1)
+            if end_pos >= 0 and end_pos < 24:
+                if len(board[end_pos]) == 1 and color != board[end_pos][0]:
+                    board[end_pos].pop()
+                board[end_pos].append(color)
+        
+    def random(self):
+        return random
+    def math(self):
+        return math
 
     def move_is_valid(self, start: int, finish: int, color: str, board: [[str]], dice, hits:int) -> bool:
         
@@ -91,7 +115,7 @@ class Player:
                 return True
         return False
 
-    def make_a_move(self, board: [[str]], dies:[int], color: str, hits: int) -> [{int: int}]:
+    def make_a_move(self, board: [[str]], dies:[int], color: str, hits: {str: int}) -> [{int: int}]:
         """
         This will be the function that would be called for
         players to make a move.
