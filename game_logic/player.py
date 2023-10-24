@@ -1,4 +1,3 @@
-from random import randint
 import random
 import math
 class Player:
@@ -7,7 +6,10 @@ class Player:
     making the moves
     """
     def __init__(self, name: str) -> None:
-        self.__name = name
+        self.__player_name = name
+
+    def get_name(self) -> str:
+        return self.__player_name
 
     def __is_finishing(self, color: str, board: [[str]]) -> bool:
         """
