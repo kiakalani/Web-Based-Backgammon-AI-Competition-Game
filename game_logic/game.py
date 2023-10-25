@@ -4,7 +4,7 @@ from player import Player
 from random import randint
 import json
 class Game:
-    def __init__(self, p1, p2) -> None:
+    def __init__(self) -> None:
         self.__player1 = player1.AIPlayer()
         self.__player2 = player2.AIPlayer()
         self.__board = []
@@ -333,25 +333,7 @@ class Game:
                 game_outcome['colors']['black'].get_name()
         game_outcome['colors'] = {k: v.get_name() for k, v in game_outcome['colors'].items()}
         return game_outcome
-            # run a turn and add the 
-        # for k, v in scores.items():
-        #     if v >= 7:
-        #         final_winner = k
-        # print(final_winner)
-        # print(scores)
-        # return colors[final_winner].get_name()
 
-            
-             
-# TODO: get player.py and game.py into a container.
-# You can also save the moves they make into the db.
-# With that you can have a match endpoint and show the
-# players how their AI behaves against other AIs
-
-# strategy to get all valid moves:
-# 1. Create a copy of the board for the client side
-# 2. Implement the checking for there as well with their choices
 if __name__ == '__main__':
-    g = Game('', '')
+    g = Game()
     print(json.dumps(g.run()))
-

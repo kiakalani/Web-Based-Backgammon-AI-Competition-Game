@@ -45,6 +45,6 @@ def compete(owner1, ai1, owner2, ai2):
     game_result = base64.b64encode(
         bytes(result_str, encoding='utf-8')
     ).decode()
-    print(game_result)
+    print(result_str)
     os.system("docker rmi --force competition")
 
