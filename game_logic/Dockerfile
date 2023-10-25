@@ -1,5 +1,4 @@
-FROM python:latest
-RUN pip freeze
+FROM python:3.9-slim
 
 ADD game.py .
 ADD player.py .

@@ -31,11 +31,13 @@ class AI(current_app.config['DB']['base']):
         self.source = source
         super().__init__()
 
+
+
 def file_is_valid(extension: str, text: str):
     # TODO: Create a tester and run the code in python with the game to make sure the file is valid.
     if extension != 'py':
         return False
-    if 'import ' in text:
+    if text.count('import') != 1 or 'print' in text:
         return False
     return True
 

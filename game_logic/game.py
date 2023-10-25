@@ -1,6 +1,8 @@
 import player1
 import player2
+from player import Player
 from random import randint
+import json
 class Game:
     def __init__(self, p1, p2) -> None:
         self.__player1 = player1.AIPlayer()
@@ -215,23 +217,22 @@ class Game:
         return True
 
 
-    def make_player_move(self, player, color: str, dies: [int], hits: int):
+    def make_player_move(self, player, color: str, dies: [int], hits: int, game_outcome: dict):
         # Getting the moves of the player
         moves = player.make_a_move(self.get_board(), [d for d in dies], color, hits)
-        print(f'Player chose {moves}')
         if not self.__dies_valid(dies, moves):
-            print(f"Invalid dies detected for color {color}. Quitting!")
-            self.debug_board()
-            exit(0)
+            return False
         if not self.__valid_moves_made(moves, dies, color, {k: v for k, v in self.__hits.items()}):
-            print(f"Invalid moves made for color {color}. Quitting")
-            self.debug_board()
-            exit(0)
+            return False
         for m in moves:
-            for move, dice, in m.items():
-                finish = move + max(-1,min(24,(dice * (1 if color == 'black' else -1))))
+            for _, dice, in m.items():
                 self.make_move(m, color, dice)
-        self.debug_board()
+        game_outcome['rounds'][-1]['moves'].append({
+            'color': color,
+            'dies': dies,
+            'moves': moves
+        })
+        return True
 
     def roll_dies(self) -> [int]:
         """
@@ -261,49 +262,84 @@ class Game:
             return 2 if colors['black'] == 15 else 1
         else:
             return 0
+    def __assign_colors(self) -> {str: Player}:
+        """
+        A simple function to decide which AI is playing as
+        what color
+        :return: a dictionary that assigns colors to the players
+        """
+        ret_dict = {'white': self.__player1 if randint(1, 2) == 1 else self.__player2}
+        ret_dict['black'] = self.__player1 \
+            if ret_dict['white'] != self.__player1 else self.__player2
+        return ret_dict
+
     def run(self) -> str:
         """
         This method would specify who the winner is.
         """
-        scores = {'white': 0, 'black': 0}
-        colors = {'white': self.__player1 if randint(1, 2) == 1 else self.__player2}
-        colors['black'] = self.__player1 if colors['white'] \
-            == self.__player2 else self.__player2
-        final_winner = None
+        game_outcome = {
+            'scores': {
+                'white': 0,
+                'black': 0
+            },
+            'colors': self.__assign_colors(),
+            'winner': None,
+            'rounds': []
+        }
         first_turn = second_turn = ''
-        while scores['white'] < 7 and scores['black'] < 7:
-            if scores['white'] == 0 and scores['black'] == 0:
+        while game_outcome['scores']['white'] < 7 and game_outcome['scores']['black'] < 7:
+            # Deciding who plays first
+            if game_outcome['scores']['white'] == 0 and game_outcome['scores']['black'] == 0:
                 first_turn = 'white' if randint(1,2) == 1 else 'black'
                 second_turn = 'white' if first_turn != 'white' else 'black'
-            winner = None
-            while winner == None:
-                dies = self.roll_dies()
-                print('---')
-                print(f'Dies {dies} for {first_turn}')
-                self.make_player_move(colors[first_turn], first_turn, dies, {k: v for k,v in self.__hits.items()})
-                dies = self.roll_dies()
-                winner = self.get_winner()
-                if winner:
-                    break
-                print('---')
-                print(f'Dies {dies} for {second_turn}')
-                self.make_player_move(colors[second_turn], second_turn, dies, {k: v for k, v in self.__hits.items()})
-                self.debug_board()
-                winner = self.get_winner()
-            self.debug_board()
-            scores[winner] += self.get_winner_points()
-            first_turn = winner
-            second_turn = 'white' if winner == 'black' else 'black'
-            winner = None
+            game_outcome['rounds'].append({'winner': None, 'moves': []})
             self.__reset_board()
-            
+            while len(game_outcome['rounds']) == 0 or game_outcome['rounds'][-1]['winner'] == None:
+                dies = self.roll_dies()
+                # If make_player_move functions return false, it would mean the player tried to do
+                # something illegal
+                if not self.make_player_move(
+                    game_outcome['colors'][first_turn], first_turn, dies,
+                    {k: v for k,v in self.__hits.items()}, game_outcome
+                ):
+                    game_outcome['scores'][first_turn] = 0
+                    game_outcome['scores'][second_turn] = 7
+                    game_outcome['winner'] = game_outcome['colors'][second_turn]
+                    game_outcome['rounds'] = []
+                    return game_outcome
+                dies = self.roll_dies()
+                game_outcome['rounds'][-1]['winner'] = self.get_winner()
+                # If this has a value, it would mean the first player won the round
+                if game_outcome['rounds'][-1]['winner']:
+                    break
+                if not self.make_player_move(
+                    game_outcome['colors'][second_turn], second_turn, dies,
+                    {k: v for k, v in self.__hits.items()}, game_outcome
+                ):
+                    game_outcome['scores'][second_turn] = 0
+                    game_outcome['scores'][first_turn] = 7
+                    game_outcome['winner'] = game_outcome['colors'][first_turn]
+                    game_outcome['rounds'] = []
+                    return game_outcome
+                game_outcome['rounds'][-1]['winner'] = self.get_winner()
+            # Adding the score for the appropriate player
+            game_outcome['scores'][game_outcome['rounds'][-1]['winner']] += self.get_winner_points()
+            # Setting the player's turn according to the color
+            first_turn = game_outcome['rounds'][-1]['winner']
+            second_turn = 'white' if game_outcome['rounds'][-1]['winner'] == 'black' else 'black'
+        # Setting the total winner of the game
+        game_outcome['winner'] = game_outcome['colors']['white'].get_name() \
+            if game_outcome['scores']['white'] >= 7 else\
+                game_outcome['colors']['black'].get_name()
+        game_outcome['colors'] = {k: v.get_name() for k, v in game_outcome['colors'].items()}
+        return game_outcome
             # run a turn and add the 
-        for k, v in scores.items():
-            if v >= 7:
-                final_winner = k
-        print(final_winner)
-        print(scores)
-        return colors[final_winner].get_name()
+        # for k, v in scores.items():
+        #     if v >= 7:
+        #         final_winner = k
+        # print(final_winner)
+        # print(scores)
+        # return colors[final_winner].get_name()
 
             
              
@@ -317,5 +353,5 @@ class Game:
 # 2. Implement the checking for there as well with their choices
 if __name__ == '__main__':
     g = Game('', '')
-    print(g.run())
+    print(json.dumps(g.run()))
 
