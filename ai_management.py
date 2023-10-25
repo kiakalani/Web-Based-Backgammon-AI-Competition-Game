@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from flask_login import current_user
 from sqlalchemy import Column, String, Integer, delete
-
+import re
 
 
 bp = Blueprint('ai', __name__, url_prefix='/ai')
@@ -41,10 +41,24 @@ def file_is_valid(extension: str, text: str):
         return False
     return True
 
+def get_ai_name(code: str) -> str:
+    pattern = re.compile(r'super\(\)\.__init__\((?P<ai_name>.+)\)')
+    m = None
+    for line in code.splitlines():
+        line = line.strip()
+        m = pattern.match(line)
+        if m:
+            return m.groupdict()['ai_name']
+    return None
+        
 def write_ai_to_db(owner, name, code):
+    name = get_ai_name(code)
+    if not name or len(name) <= 2:
+        return False
     new_ai = AI(name, owner, base64.b64encode(bytes(code, encoding='utf-8')).decode())
     current_app.config['DB']['session'].add(new_ai)
     current_app.config['DB']['session'].commit()
+    return True
 
 
 
@@ -83,8 +97,10 @@ def upload_ai():
     print(request.form)
     print(file_extension)
     if file_is_valid(file_extension, contents):
-        write_ai_to_db(current_user.id, request.form['ai_name'], contents)
-        return 'Success', 200
+        if write_ai_to_db(current_user.id, request.form['ai_name'], contents):
+            return 'Success', 200
+        return 'Bad Request', 400
+    
     print(request.form)
 
     return 'Bad Request', 400

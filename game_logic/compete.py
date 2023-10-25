@@ -3,7 +3,7 @@ from ai_management import AI
 import base64
 import os
 from sqlalchemy import Integer, String, Column
-
+import json
 
 class Competition(current_app.config['DB']['base']):
     """
@@ -16,10 +16,11 @@ class Competition(current_app.config['DB']['base']):
     loser_owner = Column(Integer, primary_key=True)
     gameplay = Column(String)
 
-    def __init__(self, name, owner, source) -> None:
-        self.name = name
-        self.owner = owner
-        self.source = source
+    def __init__(self, winner_name, loser_name, winner_owner, loser_owner) -> None:
+        self.winner_name = winner_name
+        self.loser_name = loser_name
+        self.winner_owner = winner_owner
+        self.loser_owner = loser_owner
         super().__init__()
 
 
@@ -45,6 +46,8 @@ def compete(owner1, ai1, owner2, ai2):
     game_result = base64.b64encode(
         bytes(result_str, encoding='utf-8')
     ).decode()
-    print(result_str)
+    res = json.loads(result_str)
+    print(res['winner'])
     os.system("docker rmi --force competition")
+    # result_obj = Competition()
 
