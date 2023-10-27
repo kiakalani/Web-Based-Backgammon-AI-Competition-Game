@@ -2,21 +2,43 @@
 
 {%block body_additions%}
 <br>
+<form method="post">
 <label for="your-ai-select">Choose your AI</label>
-<select class="form-select" aria-label="Select your AI" id="your-ai-select">
-    <option value="1">One</option>
-    <option value="2">Two</option>
-    <option value="3">Three</option>
+<select class="form-select" aria-label="Select your AI" id="your-ai-select" name="your_ai">
+    {%for ai in your_ais:%}
+    <option value="{{ai}}">{{ai}}</option>
+    {%endfor%}
+    
 </select>
 <br>
-<input class="form-control form-control-lg" type="text" placeholder="Play Against:" aria-label=".form-control-lg example">
+<input name="oponent" id="oponent-name" class="form-control form-control-lg" type="text" placeholder="Play Against:" aria-label=".form-control-lg example" onkeyup="update_oponent_ais()">
 <br>
 <label for="oponent-ai">Choose your oponent's AI:</label>
-<select class="form-select" aria-label="Choose Oponent's AI" id="oponent-ai">
-    <option value="1">One</option>
-    <option value="2">Two</option>
-    <option value="3">Three</option>
+<select name="oponent_ai" class="form-select" aria-label="Choose Oponent's AI" id="oponent-ai">
 </select>
 <button type="submit" class="btn btn-primary mb-3">Compete</button>
+</form>
+<script>
+    function update_oponent_ais()
+    {
+        let req = new XMLHttpRequest()
+        req.open('POST', '/compete/ais');
+        req.setRequestHeader('Content-Type', 'application/json');
+        let json_req = JSON.stringify({name: document.getElementById('oponent-name').value});
+        req.send(json_req);
+        req.onload = function() {
+            let result = JSON.parse(req.responseText);
+            let oais = document.getElementById('oponent-ai');
+            oais.innerHTML = '';
+            result.forEach(function(res) {
+                let opt = document.createElement('option');
+                opt.value = res;
+                opt.innerHTML = res;
+                oais.appendChild(opt);
+            })
+            
+        }
+    }
 
+</script>
 {%endblock%}

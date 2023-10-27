@@ -49,6 +49,7 @@ def load_db(app):
     from login import User
     from ai_management import AI
     from message import Message
+    from compete import Competition
 
     db_info = app.config['DB']
     db_info['base'].metadata.create_all(bind=db_info['engine'])
