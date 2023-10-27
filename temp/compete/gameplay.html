@@ -1,0 +1,94 @@
+{%extends 'template.html'%}
+
+{%block body_additions%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.js"></script>
+<script>
+    let gameplay = JSON.parse(atob(`{{gameplay}}`));
+    console.log(gameplay);
+    let board = [];
+    let hits = {'white' : 0, 'black': 0};
+    let dies = [6, 2];
+    function setup_board() {
+        board = [];
+        for (let i = 0; i < 24; ++i) board.push([]);
+        for (let i = 0; i < 2; ++i) {
+            board[0].push('black');
+            board[23].push('white');
+        }
+        for (let i = 0; i < 5; ++i) {
+            board[5].push('white');
+            board[18].push('black');
+            board[11].push('black');
+            board[12].push('white');
+        }
+        for (let i = 0; i < 3; ++i) {
+            board[7].push('white');
+            board[16].push('black');
+        }
+    }
+    let page_x = 600, page_y = 600;
+    function draw_board() {
+        for (let i = 0; i < 24; ++i) {
+            let x = page_x - 63 - i * 45;
+            let y = page_y - 45;
+            if (i > 11) {
+                x = 45 + (i - 12) * 45;
+                y = 45; 
+            }
+            fill('blue');
+            line(x, y, x, y + 10)
+            if (board[i].length != 0) {
+                let text_col = 'white';
+                if (board[i][0] == 'white') text_col = 'black';
+                fill(board[i][0]);
+                circle(x, y, 30);
+                fill(text_col);
+                text(board[i].length + '', x - 5, y + 5);
+            }
+        }
+    }
+    function draw_names()
+    {
+        let x = page_x / 2;
+        let y = (page_y / 2)  + (page_y / 10);
+        fill('white');
+        let render_str = gameplay['colors']['white'] + ' (white) VS  ' + gameplay['colors']['black'] + ' (black)';
+        text(render_str, x - render_str.length * 4, y);
+    }
+    function draw_hits()
+    {
+        let x = page_x / 2 - 30;
+        let y = (page_y / 2);
+        fill('black');
+        circle(x - 15, y, 30);
+        fill('white');
+        text(hits['black'], x - 20, y + 5);
+        circle(x + 15, y, 30);
+        fill('black');
+        text(hits['white'], x + 10, y + 5)
+    }
+    function draw_dies()
+    {
+        let x = (page_x / 2) - dies.length * 22.5;
+        let y = (page_y / 2) - (page_y / 10);
+        for (let i = 0; i < dies.length; ++i)
+        {
+            fill('white');
+            square(x + i * 30, y, 30);
+            fill('black');
+            text(dies[i] + '', x + i * 30 + 10, y + 15);
+        }
+    }
+    function setup() {
+        createCanvas(page_x, page_y);
+        setup_board();
+    }
+    function draw() {
+        background(100);
+        draw_board();
+        draw_names();
+        draw_hits();
+        draw_dies();
+    }
+</script>
+{%endblock%}

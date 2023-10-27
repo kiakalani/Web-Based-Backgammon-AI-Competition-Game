@@ -17,10 +17,11 @@ class Competition(current_app.config['DB']['base']):
     A class containing the model for the users
     """
     __tablename__ = 'competition'
-    winner_name = Column(String, primary_key=True)
-    loser_name = Column(String, primary_key=True)
-    winner_owner = Column(Integer, primary_key=True)
-    loser_owner = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    winner_name = Column(String)
+    loser_name = Column(String)
+    winner_owner = Column(Integer)
+    loser_owner = Column(Integer)
     gameplay = Column(String)
 
     def __init__(self, winner_name, loser_name, winner_owner, loser_owner, gameplay) -> None:
@@ -126,3 +127,15 @@ def provide_ai_names():
     ais = AI.query.filter(AI.owner == uid).all()
     ais = [a.name for a in ais]
     return jsonify(ais)
+
+@bp.route('/gameplay/<id>', methods=['GET'])
+def watch_game(id):
+    if not id.isdigit():
+        return 'Bad request', 400
+    id = int(id)
+    competition = Competition.query.filter(Competition.id == id).first()
+    if not competition:
+        return 'Bad request', 400
+    resp = base64.decodebytes(bytes(competition.gameplay, encoding='utf-8')).decode()
+    print(resp)
+    return render_template('compete/gameplay.html', gameplay=competition.gameplay)
