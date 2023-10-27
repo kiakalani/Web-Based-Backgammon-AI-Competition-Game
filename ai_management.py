@@ -55,6 +55,7 @@ def write_ai_to_db(owner, name, code):
     name = get_ai_name(code)
     if not name or len(name) <= 2:
         return False
+    name = name[1:-1]
     new_ai = AI(name, owner, base64.b64encode(bytes(code, encoding='utf-8')).decode())
     current_app.config['DB']['session'].add(new_ai)
     current_app.config['DB']['session'].commit()

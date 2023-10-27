@@ -47,7 +47,10 @@ def compete(owner1, ai1, owner2, ai2):
         bytes(result_str, encoding='utf-8')
     ).decode()
     res = json.loads(result_str)
-    print(res['winner'])
+    names = {'winner': res['winner'], 'loser': None}
+    names['loser'] = res['colors']['white'] \
+        if res['colors']['white'] != names['winner'] else res['colors']['black']
+    print(names)
     os.system("docker rmi --force competition")
     # result_obj = Competition()
 
