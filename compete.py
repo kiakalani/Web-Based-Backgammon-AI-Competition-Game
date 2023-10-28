@@ -115,6 +115,8 @@ def messages():
 
 @bp.route('/ais', methods=['POST'])
 def provide_ai_names():
+    if current_user.is_anonymous:
+        return redirect('/auth/signin')
     data = json.loads(request.data.decode())
     if not data.get('name'):
         return 'Bad Request', 400
@@ -130,6 +132,8 @@ def provide_ai_names():
 
 @bp.route('/gameplay/<id>', methods=['GET'])
 def watch_game(id):
+    if current_user.is_anonymous:
+        return redirect('/auth/signin')
     if not id.isdigit():
         return 'Bad request', 400
     id = int(id)
