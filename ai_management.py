@@ -22,7 +22,7 @@ class AI(current_app.config['DB']['base']):
     __tablename__ = 'ai'
 
     owner = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, primary_key=True)
     source = Column(String)
 
     def __init__(self, name, owner, source) -> None:
