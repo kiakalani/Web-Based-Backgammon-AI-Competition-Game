@@ -7,5 +7,4 @@ bp = Blueprint('home', __name__, url_prefix='/')
 
 @bp.route('/')
 def index():
-    # compete(1, 'Player 1', 2, 'Player 2')
     return render_template('home/index.html', user=current_user)

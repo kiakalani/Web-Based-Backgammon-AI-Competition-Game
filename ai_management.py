@@ -4,15 +4,15 @@ Student ID:101145220
 A module for managing AI uploading and removal.
 """
 import base64
+import re
 
 from flask import Blueprint, redirect, current_app, request
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from flask_login import current_user
 from sqlalchemy import Column, String, Integer, delete
-import re
 
-
+import compete
 bp = Blueprint('ai', __name__, url_prefix='/ai')
 
 class AI(current_app.config['DB']['base']):
@@ -25,16 +25,26 @@ class AI(current_app.config['DB']['base']):
     name = Column(String, primary_key=True)
     source = Column(String)
 
-    def __init__(self, name, owner, source) -> None:
+    def __init__(self, name: str, owner: int, source: str) -> None:
+        """
+        Constructor
+        """
         self.name = name
         self.owner = owner
         self.source = source
         super().__init__()
 
 
-
-def file_is_valid(extension: str, text: str):
-    # TODO: Create a tester and run the code in python with the game to make sure the file is valid.
+def file_is_valid(extension: str, text: str) -> bool:
+    """
+    This function indicates whether the uploaded file
+    is valid.
+    :param: extension: The file extension
+    :param: text: The text components of the file
+    :return: True if the file is valid; otherwise false.
+    """
+    # TODO: Run a competition and make sure the AI is functioning
+    # as expected
     if extension != 'py':
         return False
     if text.count('import') != 1 or 'print' in text:
@@ -42,6 +52,11 @@ def file_is_valid(extension: str, text: str):
     return True
 
 def get_ai_name(code: str) -> str:
+    """
+    Getter for the name of the AI from the
+    source code.
+    :return: the name of the AI
+    """
     pattern = re.compile(r'super\(\)\.__init__\((?P<ai_name>.+)\)')
     m = None
     for line in code.splitlines():
@@ -51,11 +66,23 @@ def get_ai_name(code: str) -> str:
             return m.groupdict()['ai_name']
     return None
         
-def write_ai_to_db(owner, name, code):
+def write_ai_to_db(owner: int, name: str, code: str) -> bool:
+    """
+    This function writes the ai into the database.
+    :param: The id of the owner user
+    :param: name: The name of the AI
+    :param: code: The source code of the AI
+    :return: True if the writing process was
+    successful; otherwise false
+    """
     name = get_ai_name(code)
+    # Means invalid name is provided
     if not name or len(name) <= 2:
         return False
     name = name[1:-1]
+    if AI.query.filter_by(name=name).filter_by(owner=owner).first():
+        # This would mean that this AI already exists
+        return False
     new_ai = AI(name, owner, base64.b64encode(bytes(code, encoding='utf-8')).decode())
     current_app.config['DB']['session'].add(new_ai)
     current_app.config['DB']['session'].commit()
@@ -93,8 +120,6 @@ def upload_ai():
     except UnicodeDecodeError:
         return "Bad Request", 400
     
-    if 'ai_name' not in request.form:
-        return 'Bad Request', 400
     print(request.form)
     print(file_extension)
     if file_is_valid(file_extension, contents):
@@ -122,6 +147,14 @@ def remove_ai():
     obj = AI.query.filter_by(name=removed).first()
     if obj is None:
         return 'Bad Request', 400
+    Competition = compete.Competition
+    items = session.query(Competition).filter(
+        ((Competition.winner_name == removed) and (Competition.winner_owner == current_user.id)) or
+        (Competition.loser_name == removed and Competition.loser_owner == current_user.id)
+    ).all()
+    print(items)
+    for i in items:
+        session.delete(i)
     session.delete(obj)
     session.commit()
     return "DONE!"

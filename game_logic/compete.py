@@ -26,6 +26,9 @@ class Competition(current_app.config['DB']['base']):
         super().__init__()
 
 
+def ai_logic_is_valid(code: str) -> bool:
+    pass
+
 
 def compete(owner1, ai1, owner2, ai2):
     first_ai = AI.query.filter(AI.owner == owner1, AI.name == ai1).first()

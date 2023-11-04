@@ -1,13 +1,12 @@
 from flask import Blueprint, request, render_template, redirect, jsonify
 from flask_login import current_user
 from flask import current_app
-from ai_management import AI
 import base64
 import os
 from sqlalchemy import Integer, String, Column
 import json
 from sqlalchemy.exc import IntegrityError
-from ai_management import AI
+import ai_management
 from login import User
 import json
 
@@ -35,6 +34,7 @@ class Competition(current_app.config['DB']['base']):
 
 
 def compete(owner1, ai1, owner2, ai2):
+    AI = ai_management.AI
     first_ai = AI.query.filter(AI.owner == owner1, AI.name == ai1).first()
     second_ai = AI.query.filter(AI.owner == owner2, AI.name == ai2).first()
     db_session = current_app.config['DB']['session']
@@ -106,6 +106,7 @@ def messages():
             return 'Bad request', 400
         oponent_id = oponent_id.id
         return compete(user_id, user_req['your_ai'], oponent_id, user_req['oponent_ai'])
+    AI = ai_management.AI
     your_ais = AI.query.filter(AI.owner == user_id).all()
     your_ais = [i.name for i in your_ais]
 
@@ -126,6 +127,7 @@ def provide_ai_names():
     if uid == None:
         return jsonify([])
     uid = uid.id
+    AI = ai_management.AI
     ais = AI.query.filter(AI.owner == uid).all()
     ais = [a.name for a in ais]
     return jsonify(ais)
