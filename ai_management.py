@@ -13,6 +13,7 @@ from flask_login import current_user
 from sqlalchemy import Column, String, Integer, delete
 
 import compete
+
 bp = Blueprint('ai', __name__, url_prefix='/ai')
 
 class AI(current_app.config['DB']['base']):
@@ -147,15 +148,16 @@ def remove_ai():
     obj = AI.query.filter_by(name=removed).first()
     if obj is None:
         return 'Bad Request', 400
+
+    # Removing the competition that the AI participated in
     Competition = compete.Competition
     items = session.query(Competition).filter(
         ((Competition.winner_name == removed) and (Competition.winner_owner == current_user.id)) or
         (Competition.loser_name == removed and Competition.loser_owner == current_user.id)
     ).all()
-    print(items)
     for i in items:
         session.delete(i)
     session.delete(obj)
     session.commit()
-    return "DONE!"
+    return redirect('/account')
 

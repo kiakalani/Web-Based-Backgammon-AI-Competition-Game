@@ -1,0 +1,16 @@
+{%extends 'template.html'%}
+
+
+{%block body_additions%}
+<div class="card text-white bg-dark">
+    <div class="card-header">User Details: </div>
+    <div class="card-body">
+      <h5 class="card-title">{{user.username}}</h5>
+      <p class="card-text">aka {{user.name}}</p>
+
+      <a class="btn btn-primary" href="/users/{{user.id}}/follow">{{follow_txt}}</a>
+      <a class="btn btn-danger" href="/users/{{user.id}}/block">{{block_txt}}</a>
+    </div>
+</div>
+
+{%endblock%}

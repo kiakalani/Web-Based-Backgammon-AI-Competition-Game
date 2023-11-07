@@ -1,0 +1,17 @@
+{% extends 'template.html' %}
+
+{% block body_additions%}
+<form>
+<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Search for a username" aria-label="Search for a username" aria-describedby="search-btn" name="query">
+    <button class="btn btn-outline-secondary" type="submit" id="search-btn">Search</button>
+</div>
+</form>
+
+<br><br>
+<div class="list-group">
+    {% for u in users:%}
+        <a href="/users/{{u.id}}" class="list-group-item list-group-item-action">{{u.username}}</a>
+    {%endfor%}
+</div>  
+{%endblock%}

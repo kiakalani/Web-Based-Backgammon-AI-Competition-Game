@@ -60,6 +60,8 @@ def create_app():
         app.register_blueprint(compete.bp)
         import ai_management
         app.register_blueprint(ai_management.bp)
+        import users
+        app.register_blueprint(users.bp)
 
         # Setting up the socket for messaging
         @socketio.on('connect')
