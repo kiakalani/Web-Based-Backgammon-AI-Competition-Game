@@ -3,6 +3,7 @@ from flask import current_app, Blueprint, request, render_template,\
 from flask_login import current_user
 import friends
 bp = Blueprint('users', __name__, url_prefix='/users')
+from sqlalchemy import and_, or_
 
 # Include all the users who did not block the user
 # Make query working
@@ -20,19 +21,22 @@ def index():
     return render_template('/users/index.html', users=users)
 
 def get_follow_txt(user1: int, user2: int) -> str:
+    print(user1, user2, 'are the users')
+
     # current_user is user2
     FriendRequest = friends.FriendRequest
     if friends.users_are_friends(user1, user2):
         return 'unfollow'
     elif FriendRequest.query.filter(
-        FriendRequest.from_user == user1 and FriendRequest.to_user == user2
+        and_(FriendRequest.from_user == user1, FriendRequest.to_user == user2)
     ).first():
         return 'accept'
     elif FriendRequest.query.filter(
-        FriendRequest.from_user == user2 and FriendRequest.to_user == user1
+        and_(FriendRequest.from_user == user2, FriendRequest.to_user == user1)
     ).first():
         return 'requested'
     return 'follow'
+
 
 # Show the specific user and allow to block
 # or follow the user
@@ -41,10 +45,12 @@ def user_page(uid):
     if not uid.isdigit():
         return 'Bad Request', 400
     uid = int(uid)
+    if uid == current_user.id:
+        return 'Bad Request', 400
     Blocked = friends.Blocked
     user = friends.login.User.query.filter_by(id=int(uid)).first()
     if not user or Blocked.query.filter(
-        Blocked.blocked_user == current_user.id and Blocked.user == user.id
+        and_(Blocked.blocked_user == current_user.id, Blocked.user == user.id)
     ).first():
         return 'Bad Request', 400
     follow_txt = get_follow_txt(uid, current_user.id)
@@ -73,17 +79,22 @@ def follow(uid):
     Blocked = friends.Blocked
     # Making sure the user has not blocked the current user
     if Blocked.query.filter(
-        Blocked.user == uid and Blocked.blocked_user == current_user.id
+        or_(
+            and_(Blocked.user == uid, Blocked.blocked_user == current_user.id),
+            and_(Blocked.user == current_user.id, Blocked.blocked_user == uid)
+        )
     ).first():
         return 'Bad Request', 400
+    if uid == current_user.id:
+        return 'Bad request', 400
     if friends.users_are_friends(uid, current_user.id):
         Friend = friends.Friend
         print('here1')
         print(friends.users_are_friends(uid, current_user))
-        f_inst = Friend.query.filter(Friend.user1 == uid and Friend.user2 == current_user.id).first()
+        f_inst = Friend.query.filter(and_(Friend.user1 == uid, Friend.user2 == current_user.id)).first()
         print(f_inst)
         if not f_inst:
-            f_inst = Friend.query.filter(Friend.user1 == current_user.id and Friend.user2 == uid).first()
+            f_inst = Friend.query.filter(and_(Friend.user1 == current_user.id, Friend.user2 == uid)).first()
         print('here2')
         print(f_inst)
         db_inst.delete(f_inst)
@@ -93,7 +104,7 @@ def follow(uid):
     # Checking to see whether this is for accepting the follow request
     FriendRequest = friends.FriendRequest
     other_side_req = FriendRequest.query.filter(
-        FriendRequest.from_user == uid and FriendRequest.to_user == current_user.id
+        and_(FriendRequest.from_user == uid, FriendRequest.to_user == current_user.id)
     ).first()
     # This means the user is accepting the follow request
     if other_side_req:
@@ -104,7 +115,7 @@ def follow(uid):
     else: # this means the user is making a follow request
         f = FriendRequest(current_user.id, uid)
         curf = FriendRequest.query.filter(
-            FriendRequest.from_user == current_user.id and FriendRequest.to_user == uid
+            and_(FriendRequest.from_user == current_user.id, FriendRequest.to_user == uid)
         ).first()
         if curf:
             db_inst.delete(curf)
@@ -123,4 +134,51 @@ def follow(uid):
 # pressed
 @bp.route('/<uid>/block', methods=['GET'])
 def block(uid):
-    pass
+    if not uid.isdigit() or \
+        not friends.login.User.query.filter_by(id=int(uid)).first():
+        return 'Bad Request', 400
+    Blocked = friends.Blocked
+    if Blocked.query.filter(
+        and_(Blocked.user == uid, Blocked.blocked_user == current_user.id)
+    ).first():
+        return 'Bad Request', 400
+    uid = int(uid)
+    db_inst = current_app.config['DB']['session']
+
+    if not friends.user_is_blocked(current_user.id, uid):
+        # Block the user
+        block_inst = Blocked(current_user.id, uid)
+        db_inst.add(block_inst)
+        # if friendship exists, remove it
+        Friend = friends.Friend
+        friend_inst = Friend.query.filter(
+            and_(Friend.user1 == uid, Friend.user2 == current_user.id)
+        ).first()
+        if not friend_inst:
+            friend_inst = Friend.query.filter(
+                and_(Friend.user2 == uid, Friend.user1 == current_user.id)
+            ).first()
+        if friend_inst:
+            db_inst.delete(friend_inst)
+
+        # if follow request made, remove it
+        FriendReq = friends.FriendRequest
+        f_inst = FriendReq.query.filter(
+            and_(FriendReq.from_user == current_user.id, FriendReq.to_user == uid)
+        ).first()
+        if f_inst:
+            db_inst.delete(f_inst)
+        f_inst = FriendReq.query.filter(
+            and_(FriendReq.to_user == current_user.id, FriendReq.from_user == uid)
+        ).first()
+        if f_inst:
+            db_inst.delete(f_inst)
+    else:
+        # Unblock the user
+        blocked_inst = Blocked.query.filter(
+            and_(Blocked.user == current_user.id, Blocked.blocked_user == uid)
+        ).first()
+        if blocked_inst:
+            db_inst.delete(blocked_inst)
+    db_inst.commit()
+    return redirect(f'/users/{uid}')

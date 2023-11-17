@@ -10,7 +10,7 @@ from flask import Blueprint, redirect, current_app, request
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from flask_login import current_user
-from sqlalchemy import Column, String, Integer, delete
+from sqlalchemy import Column, String, Integer, delete, or_, and_
 
 import compete
 
@@ -152,8 +152,10 @@ def remove_ai():
     # Removing the competition that the AI participated in
     Competition = compete.Competition
     items = session.query(Competition).filter(
-        ((Competition.winner_name == removed) and (Competition.winner_owner == current_user.id)) or
-        (Competition.loser_name == removed and Competition.loser_owner == current_user.id)
+        or_(
+            and_((Competition.winner_name == removed), (Competition.winner_owner == current_user.id)),
+            and_(Competition.loser_name == removed, Competition.loser_owner == current_user.id)
+        )
     ).all()
     for i in items:
         session.delete(i)

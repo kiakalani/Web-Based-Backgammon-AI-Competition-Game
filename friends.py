@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect,\
     current_app
 from flask_login import current_user
-from sqlalchemy import String, Integer, Column
+from sqlalchemy import String, Integer, Column, and_, or_
 import login
 
 """
@@ -47,9 +47,10 @@ def users_are_friends(user1: int, user2: int) -> bool:
     :return: true if two users are friends, otherwise false
     """
     return Friend.query.filter(
-        (Friend.user1 == user1 and Friend.user2 == user2)
-    ).first() != None or Friend.query.filter(
-        (Friend.user2 == user1 and Friend.user1 == user2)
+        or_(
+            and_(Friend.user1 == user1, Friend.user2 == user2),
+            and_(Friend.user2 == user1, Friend.user1 == user2)
+        )
     ).first() != None
 
 class Blocked(current_app.config['DB']['base']):
@@ -65,7 +66,7 @@ class Blocked(current_app.config['DB']['base']):
 
 def user_is_blocked(user: int, blocked: int) -> bool:
     return Blocked.query.filter(
-        Blocked.user == user and Blocked.blocked_user == blocked
+        and_(Blocked.user == user, Blocked.blocked_user == blocked)
     ).first() != None
 
 def get_friends(user_id: int) -> [Friend]:
@@ -80,7 +81,7 @@ def get_friends(user_id: int) -> [Friend]:
     # Getting the ids
     friends = [(i.user1 if i.user1 != user_id else i.user2)\
         for i in db_session.query(Friend).filter(
-            Friend.user1 == user_id or Friend.user2 == user_id
+            or_(Friend.user1 == user_id, Friend.user2 == user_id)
         ).all()
     ]
     # Getting the corresponding user object for each id
