@@ -92,6 +92,10 @@ def get_friends(user_id: int) -> [Friend]:
 
 @bp.route('/', methods=['GET'])
 def messages():
+    """
+    Invoked when the user tries to see a list of
+    their friends.
+    """
     if current_user.is_anonymous:
         return redirect('/auth/signin')
     
