@@ -47,6 +47,31 @@ class Competition(current_app.config['DB']['base']):
         self.gameplay = gameplay
         super().__init__()
 
+def code_is_valid(source):
+    """
+    Runs the uploaded code to double check whether
+    the written code is valid or not.
+    :param: source: The string source code that was
+    uploaded to the application.
+    :return: True if the uploaded code is valid; otherwise false.
+    """
+
+    # Writing the code to the test directory
+    with open('game_logic/check_valid/player2.py', 'w') as file:
+        file.write(source)
+        file.close()
+    # Running the container
+    os.system('docker build -t testvalidai ./game_logic/check_valid')
+    result_str = os.popen('docker run testvalidai').read()
+    os.system("docker rmi --force testvalidai")
+    try:
+        # It means competition took place with no issues
+        json.loads(result_str)
+        return True
+    except json.JSONDecodeError:
+        # This means there was an error with the uploaded code
+        return False
+    return False
 
 
 def compete(owner1: int, ai1: str, owner2: int, ai2: str) -> (str, int):

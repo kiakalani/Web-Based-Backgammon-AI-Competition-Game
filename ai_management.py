@@ -50,6 +50,7 @@ def file_is_valid(extension: str, text: str) -> bool:
         return False
     if text.count('import') != 1 or 'print' in text:
         return False
+    compete.code_is_valid(text)
     return True
 
 def get_ai_name(code: str) -> str:
