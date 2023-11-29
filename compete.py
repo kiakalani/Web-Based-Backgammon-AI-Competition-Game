@@ -16,7 +16,7 @@ import ai_management
 from login import User
 import json
 
-
+import login
 class Competition(current_app.config['DB']['base']):
     """
     A class containing the model for the users
@@ -181,6 +181,9 @@ def messages():
         if not oponent_id:
             return 'Bad request', 400
         oponent_id = oponent_id.id
+        if oponent_id == user_id:
+            return 'Bad Request', 400
+        
         # Running the competition and returning the result
         return compete(user_id, user_req['your_ai'], oponent_id, user_req['oponent_ai'])
     AI = ai_management.AI
@@ -192,7 +195,36 @@ def messages():
 
     other_ais = AI.query.filter(AI.owner != user_id).all()
     other_ais = [(i.name, i.owner) for i in other_ais]
-    return render_template('compete/index.html', user=current_user, your_ais=your_ais, other_ais=other_ais)
+    return render_template(
+        'compete/index.html', user=current_user, your_ais=your_ais,
+        other_ais=other_ais
+    )
+
+def get_win_loss_records():
+    """
+    A helper function to provide all of the win loss record in a dictionary
+    format.
+    :return: A dictionary containing all of the information about win loss record.
+    """
+    User = login.User
+    competitions = Competition.query.all()
+    result = {}
+    for c in competitions:
+        winner_user = User.query.filter(User.id == c.winner_owner).first()
+        loser_user = User.query.filter(User.id == c.loser_owner).first()
+        result.setdefault(winner_user.id, {'win': 0, 'loss': 0, 'name': winner_user.username})
+        result.setdefault(loser_user.id, {'win': 0, 'loss': 0, 'name': loser_user.username})
+        result[winner_user.id]['win'] += 1
+        result[loser_user.id]['loss'] += 1
+    result = [value for _, value in result.items()]
+    result.sort(key=lambda a: a['win'], reverse=True)
+    return result
+
+@bp.route('/leaderboard', methods=['GET'])
+def get_leaderboard():
+    # Provide the name and number of wins and number of losses
+    win_loss_records = get_win_loss_records()
+    return render_template('compete/leaderboard.html', win_loss_records=win_loss_records, user=current_user)
 
 @bp.route('/ais', methods=['POST'])
 def provide_ai_names():

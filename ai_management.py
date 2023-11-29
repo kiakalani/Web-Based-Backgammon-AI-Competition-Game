@@ -84,7 +84,7 @@ def write_ai_to_db(owner: int, name: str, code: str) -> bool:
     if not name or len(name) <= 2:
         return False
     name = name[1:-1]
-    if AI.query.filter_by(name=name).filter_by(owner=owner).first():
+    if AI.query.filter(and_(AI.owner == owner, AI.name == name)).first():
         # This would mean that this AI already exists
         return False
     new_ai = AI(name, owner, base64.b64encode(bytes(code, encoding='utf-8')).decode())
