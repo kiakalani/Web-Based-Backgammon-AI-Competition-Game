@@ -1,0 +1,24 @@
+{%extends 'template.html'%}
+
+{%block body_additions%}
+<h3>Leaderboard:</h3>
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Wins</th>
+        <th scope="col">Losses</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%for item in win_loss_records:%}
+      <tr>
+        <td>{{item['name']}}</td>
+        <td>{{item['win']}}</td>
+        <td>{{item['loss']}}</td>
+      </tr>
+      {%endfor%}
+      
+    </tbody>
+  </table>
+{%endblock%}
