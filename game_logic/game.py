@@ -3,6 +3,9 @@ import player2
 from player import Player
 from random import randint
 import json
+import signal
+def timeout_exception(self, signum, frame):
+    raise Exception('Timeout occured')
 class Game:
     def __init__(self) -> None:
         self.__player1 = player1.AIPlayer()
@@ -215,11 +218,16 @@ class Game:
             if self.has_valid_moves(color, d, board_cp, hits):
                 return False
         return True
-
+    
 
     def make_player_move(self, player, color: str, dies: [int], hits: int, game_outcome: dict):
         # Getting the moves of the player
-        moves = player.make_a_move(self.get_board(), [d for d in dies], color, hits)
+        signal.signal(signal.SIGALRM, timeout_exception)
+        signal.alarm(1)
+        try:
+            moves = player.make_a_move(self.get_board(), [d for d in dies], color, hits)
+        except Exception as e:
+            raise e
         if not self.__dies_valid(dies, moves):
             return False
         if not self.__valid_moves_made(moves, dies, color, {k: v for k, v in self.__hits.items()}):

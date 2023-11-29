@@ -50,8 +50,10 @@ def file_is_valid(extension: str, text: str) -> bool:
         return False
     if text.count('import') != 1 or 'print' in text:
         return False
-    compete.code_is_valid(text)
-    return True
+    # To check whether the AI makes valid moves or not
+    code_valid =  compete.code_is_valid(text)
+    print('Validity is', code_valid)
+    return code_valid
 
 def get_ai_name(code: str) -> str:
     """
