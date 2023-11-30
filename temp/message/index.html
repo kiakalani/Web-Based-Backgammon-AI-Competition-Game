@@ -7,18 +7,10 @@
     {% if user.id != u.id:%}
     <a class="list-group-item d-flex list-group-item-action justify-content-between align-items-center" href="/message/{{u.id}}">
       {{u.username}}
-      <span class="badge bg-primary rounded-pill">14</span>
+      <span id="user{{u.id}}" class="badge bg-primary rounded-pill">{{unseen[u.id]}}</span>
     </a>
     {%endif%}
     {%endfor%}
-    <a class="list-group-item d-flex list-group-item-action justify-content-between align-items-center">
-      Second Person
-      <span class="badge bg-primary rounded-pill">2</span>
-    </a>
-    <a class="list-group-item d-flex list-group-item-action justify-content-between align-items-center">
-      Third person
-      <span class="badge bg-primary rounded-pill">1</span>
-    </a>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
     var socket = io();
@@ -27,6 +19,7 @@
         console.log('Connected');
     });
     socket.on('receive', function(resp) {
+      document.getElementById(`user${resp.sender}`).innerHTML = resp.unread;
       console.log('Received a message', resp)
     });
 </script>

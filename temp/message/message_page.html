@@ -4,13 +4,13 @@
 {%block body_additions%}
 <div id="message-contents" style="overflow-y: scroll; width:100%; height: 85vh; display:block;" data-bs-spy="scroll">
     {%for msg in messages:%}
-        {% if msg[0] == receiver_name:%}
+        {% if msg.sender != user.id:%}
         <div class="alert alert-info" role="alert">
-            {{receiver_name}}: {{msg[2]}}
+            {{receiver_name}}: {{msg.text}}
           </div>
         {%else:%}
         <div class="alert alert-warning" role="alert">
-            You: {{msg[2]}}
+            You: {{msg.text}}
         </div>
         {%endif%}
     {%endfor%}
@@ -30,6 +30,7 @@
         if (resp.sender == "{{receiver_name}}") {
             document.getElementById('message-contents').innerHTML += `<div class="alert alert-info" role="alert">{{receiver_name}}: ${resp.message}</div>`;
         }
+        socket.emit('seen', {sender: resp.sender});
     });
     function send_msg()
     {
