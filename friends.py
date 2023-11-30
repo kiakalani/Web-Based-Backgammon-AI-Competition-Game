@@ -3,6 +3,7 @@ from flask import Blueprint, request, render_template, redirect,\
 from flask_login import current_user
 from sqlalchemy import String, Integer, Column, and_, or_
 import login
+import users
 
 """
 General idea:
@@ -89,14 +90,59 @@ def get_friends(user_id: int) -> [Friend]:
         db_session.query(login.User).filter(login.User.id == i).first()\
             for i in friends
     ]
-
+def get_blocked_users(user_id, query = None):
+    users = []
+    for b in Blocked.query.filter(Blocked.user == user_id).all():
+        users.append(login.User.query.filter(login.User.id == b.blocked_user).first())
+    if query:
+        return [u for u in users if query.lower() in u.username.lower()]
+    return users
+def get_frequest_users(uid, query=None):
+    users = []
+    for r in FriendRequest.query.filter(FriendRequest.to_user == uid).all():
+        users.append(login.User.query.filter(login.User.id == r.from_user).first())
+    if query:
+        return [u for u in users if query.lower() in u.username.lower()]
+    return users
+def choose_active_tab():
+    resp = {
+        'users': 'active' if request.args.get('uname') else '',
+        'friends': 'active' if request.args.get('friendname') else '',
+        'blocked': 'active' if request.args.get('blockedq') else '',
+        'request': 'active' if request.args.get('requestq') else ''
+    }
+    for r in resp:
+        if resp[r] == 'active':
+            return resp
+    resp['users'] = 'active'
+    return resp
+def choose_active_div():
+    return {
+        k: v if v != 'active' else 'show active' for k, v in choose_active_tab().items()
+    }
 @bp.route('/', methods=['GET'])
 def messages():
     """
     Invoked when the user tries to see a list of
     their friends.
     """
+
+    
     if current_user.is_anonymous:
         return redirect('/auth/signin')
-    
-    return render_template('friends/index.html', user=current_user)
+    query = request.args.get('uname')
+    users = []
+    if query:
+        User = login.User
+        blocked_by = Blocked.query.filter_by(blocked_user=current_user.id).all()
+        users = User.query.filter(User.username.like(f'%{query}%')).all()
+        users = [u for u in users if u.id not in blocked_by and u != current_user]
+    friends = get_friends(current_user.id)
+    fquery = request.args.get('friendname')
+    if fquery:
+        friends = [f for f in friends if fquery.lower() in f.username.lower()]
+    blocked = get_blocked_users(current_user.id, request.args.get('blockedq'))
+    requests = get_frequest_users(current_user.id, request.args.get('requestq'))
+    return render_template('friends/index.html', user=current_user, users=users,
+    friends=friends, blocked=blocked, requests=requests, active=choose_active_tab(),
+    actived=choose_active_div())
