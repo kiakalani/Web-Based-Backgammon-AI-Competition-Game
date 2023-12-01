@@ -69,6 +69,13 @@ def create_app():
             if current_user.is_anonymous:
                 return
             app.config['SOCKET_SIDS'][current_user.username] = request.sid
+            socketio.emit(
+                'unreads',
+                {
+                    'all_unreads': message.get_count_all_unseen(current_user.id)
+                },
+                room=app.config['SOCKET_SIDS'][current_user.username]
+            )
 
         @socketio.on('disconnect')
         def disconnect():

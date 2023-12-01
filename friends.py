@@ -5,15 +5,6 @@ from sqlalchemy import String, Integer, Column, and_, or_
 import login
 import users
 
-"""
-General idea:
-1. Friend request through a post method
-2. Acceptance would remove the friend request and
-add the ids as friends
-3. Blocking an account would imply removing them
-from both friend requests and friends
-4. Unblocking just removes it from the blocked table
-"""
 bp = Blueprint('friends', __name__, url_prefix='/friends')
 
 class Friend(current_app.config['DB']['base']):
