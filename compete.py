@@ -248,6 +248,41 @@ def provide_ai_names():
     ais = [a.name for a in ais]
     return jsonify(ais)
 
+def get_gameplays(query: str=None):
+    """
+    This function provides all of the gameplays
+    where it matches the query.
+    :param: query: The query parameter provided by the user.
+    :return: The collection of the users and corresponding gameplay.
+    """
+    if query == None:
+        query = ''
+    query = query.lower()
+    all_comps = [c for c in Competition.query.all()]
+    for i in range(len(all_comps)):
+        all_comps[i] = {
+            'winner_user': User.query.filter(User.id == all_comps[i].winner_owner).first(),
+            'loser_user': User.query.filter(User.id == all_comps[i].loser_owner).first(),
+            'competition': all_comps[i]
+        }
+    return [a for a in all_comps if (
+        query in a['winner_user'].username or query in a['loser_user'].username \
+        or query in a['competition'].winner_name or query in a['competition'].loser_name
+    )]
+
+@bp.route('/gameplay', methods=['GET'])
+def main_gameplay_pg():
+    """
+    A function to provide the gameplays of the
+    previous competitions.
+    """
+    if current_user.is_anonymous:
+        return redirect('/auth/signin')
+
+    gameplays = get_gameplays(request.args.get('q'))
+    return render_template('compete/gameplayIndex.html',
+    gameplays=gameplays, user=current_user)
+
 @bp.route('/gameplay/<id>', methods=['GET'])
 def watch_game(id):
     """
@@ -265,4 +300,6 @@ def watch_game(id):
     competition = Competition.query.filter(Competition.id == id).first()
     if not competition:
         return 'Bad request', 400
-    return render_template('compete/gameplay.html', gameplay=competition.gameplay)
+    return render_template('compete/gameplay.html',
+    gameplay=competition.gameplay,
+    user=current_user)

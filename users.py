@@ -21,7 +21,6 @@ def index():
     return render_template('/users/index.html', users=users)
 
 def get_follow_txt(user1: int, user2: int) -> str:
-    print(user1, user2, 'are the users')
 
     # current_user is user2
     FriendRequest = friends.FriendRequest

@@ -1,0 +1,25 @@
+{%extends 'template.html'%}
+
+{%block body_additions%}
+
+    <form>
+        <div class="input-group mb-3">
+            <input name="q" type="text" class="form-control" placeholder="Search for anything related to a competition" aria-label="Search for anything related to a competition" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+    <br>
+    <div class="list-group">
+        {%for g in gameplays:%}
+        <a href="/compete/gameplay/{{g['competition'].id}}" class="list-group-item list-group-item-action">{{g['competition'].winner_name}}({{g['winner_user'].username}}) VS {{g['competition'].loser_name}}({{g['loser_user'].username}})</a>
+        {%endfor%}
+        {%if users:%}
+            {%for u in users:%}
+            <a href="/users/{{u.id}}" class="list-group-item list-group-item-action">{{u.username}}</a>
+            {%endfor%}
+        {%endif%}
+    </div>
+
+{%endblock%}

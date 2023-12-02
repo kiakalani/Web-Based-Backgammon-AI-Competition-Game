@@ -5,8 +5,9 @@ A module for managing AI uploading and removal.
 """
 import base64
 import re
+import os
 
-from flask import Blueprint, redirect, current_app, request
+from flask import Blueprint, redirect, current_app, request, send_file
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from flask_login import current_user
@@ -102,6 +103,14 @@ def search_page():
     Displays the AIs currently available to compete against
     """
     return "", 200
+@bp.route('/sample.py', methods=['GET'])
+def get_base_ai():
+    if current_user.is_anonymous:
+        return redirect('/auth/signin')
+    path = os.path.join('game_logic', 'sample.py')
+    if os.path.exists(path):
+        return send_file(path)
+    return 'Bad request', 400
 
 @bp.route('/upload', methods=['POST'])
 def upload_ai():

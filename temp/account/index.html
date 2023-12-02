@@ -29,12 +29,11 @@
         <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab"
             tabindex="0">...</div>
         <div class="tab-pane fade" id="v-pills-my-ai" role="tabpanel" aria-labelledby="v-pills-my-ai-tab" tabindex="0">
+            <a href="/ai/sample.py" class="btn btn-primary mb-3">Download the sample AI</a>
             <form method="post" action="/ai/upload" enctype="multipart/form-data">
-                <input type="text" placeholder="Name of your AI" name="ai_name"> 
                 <div class="mb-3">
                     <label for="formFile" class="form-label">Add an AI</label>
                     <input class="form-control" type="file" name="file">
-                    
                 </div>
                 <button type="submit">Add AI</button>
             </form>
@@ -50,6 +49,7 @@
 
                 <button type="submit" class="btn btn-primary mb-3">Delete</button>
             </form>
+            
 
         </div>
     </div>
