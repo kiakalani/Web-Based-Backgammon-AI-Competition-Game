@@ -214,3 +214,12 @@ def message_by_id(uid):
         receiver_id=dest_user.id,
         user=current_user
     )
+
+def flush_messages(user1: int, user2: int) -> None:
+    """
+    This function deletes all the messages between two users
+    that has been shared so far.
+    :param: user1: the uid of the first user
+    :param: user2: the uid of the second user
+    """
+    pass

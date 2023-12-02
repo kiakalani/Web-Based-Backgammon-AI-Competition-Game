@@ -53,7 +53,6 @@ def file_is_valid(extension: str, text: str) -> bool:
         return False
     # To check whether the AI makes valid moves or not
     code_valid =  compete.code_is_valid(text)
-    print('Validity is', code_valid)
     return code_valid
 
 def get_ai_name(code: str) -> str:
@@ -132,11 +131,8 @@ def upload_ai():
         contents = request.files['file'].stream.read().decode()
     except UnicodeDecodeError:
         return "Bad Request", 400
-    
-    print(request.form)
-    print(file_extension)
     if file_is_valid(file_extension, contents):
-        if write_ai_to_db(current_user.id, request.form['ai_name'], contents):
+        if write_ai_to_db(current_user.id, '', contents):
             return 'Success', 200
         return 'Bad Request', 400
     

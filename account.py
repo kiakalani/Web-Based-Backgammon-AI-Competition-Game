@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, request, current_app
 from flask_login import current_user
+
 from ai_management import AI
 
 bp = Blueprint('account', __name__, url_prefix='/account')

@@ -64,17 +64,13 @@
           </div>
         </div>
     </nav>
-    <div id="page-contents">
-        {% block body_additions %} {%endblock%}
-    </div>
+    
     {% if user and not user.is_anonymous:%}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 
     <script>
           var socket = io();
 
-      socket.on('connect', function() {
-      });
       socket.on('unreads', function(resp) {
         let add_txt = resp.all_unreads;
         document.getElementById('message-count').innerHTML = add_txt;
@@ -87,6 +83,9 @@
       })
     </script>
     {%endif%}
+    <div id="page-contents">
+      {% block body_additions %} {%endblock%}
+  </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"

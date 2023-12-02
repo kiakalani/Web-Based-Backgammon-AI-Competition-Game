@@ -2,6 +2,7 @@ from flask import current_app, Blueprint, request, render_template,\
     redirect
 from flask_login import current_user
 import friends
+import message
 bp = Blueprint('users', __name__, url_prefix='/users')
 from sqlalchemy import and_, or_
 
@@ -53,8 +54,6 @@ def user_page(uid):
     ).first():
         return 'Bad Request', 400
     follow_txt = get_follow_txt(uid, current_user.id)
-    print(friends.users_are_friends(uid, current_user.id))
-    print(uid, 'and', current_user.id)
     block_txt = 'unblock' if friends.user_is_blocked(current_user.id, uid) else 'block'
 
     return render_template('users/user.html', user=user, follow_txt=follow_txt, block_txt=block_txt)
@@ -175,6 +174,7 @@ def block(uid):
         ).first()
         if f_inst:
             db_inst.delete(f_inst)
+        message.flush_messages(uid, current_user.id)
     else:
         # Unblock the user
         blocked_inst = Blocked.query.filter(
