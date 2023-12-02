@@ -111,6 +111,12 @@ def choose_active_div():
     return {
         k: v if v != 'active' else 'show active' for k, v in choose_active_tab().items()
     }
+def count_friend_requests(uid, inc=False):
+    count = len(FriendRequest.query.filter(FriendRequest.to_user == uid).all())
+    if inc:
+        count += 1
+    return str(count) if count <= 99 else '+99'
+
 @bp.route('/', methods=['GET'])
 def messages():
     """

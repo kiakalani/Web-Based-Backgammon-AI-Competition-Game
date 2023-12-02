@@ -107,7 +107,8 @@ def send_msg(data):
     :param: data: the dictionary containing the information
     client has sent over to the server.
     """
-
+    if current_user.is_anonymous:
+        return
     # Necessary components about the message
     receiver = data.get('receiver')
     message = data.get('message')
@@ -147,6 +148,8 @@ def set_the_seen(data):
     Invoked when users open the unread messages.
     :param: data: the data sent over by the client.
     """
+    if current_user.is_anonymous:
+        return
     sender = data['sender']
     set_seen(sender, current_user.id)
     # we have to update this on seen as well

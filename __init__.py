@@ -76,6 +76,11 @@ def create_app():
                 },
                 room=app.config['SOCKET_SIDS'][current_user.username]
             )
+            socketio.emit(
+                'count_freqs',
+                {'count': friends.count_friend_requests(current_user.id, False)},
+                room=app.config['SOCKET_SIDS'][current_user.username]
+            )
 
         @socketio.on('disconnect')
         def disconnect():

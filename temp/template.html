@@ -29,7 +29,9 @@
                   <a class="nav-link active" aria-current="page" href="/compete">Compete</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="/friends">Friends</a>
+                  <a class="nav-link active" aria-current="page" href="/friends">Friends
+                    <span id="freq-count" class="badge bg-primary rounded-pill">0</span>
+                  </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link active" aria-current="page" href="/message">Messages
@@ -66,7 +68,11 @@
         {% block body_additions %} {%endblock%}
     </div>
     {% if user and not user.is_anonymous:%}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+
     <script>
+          var socket = io();
+
       socket.on('connect', function() {
       });
       socket.on('unreads', function(resp) {
@@ -74,6 +80,11 @@
         document.getElementById('message-count').innerHTML = add_txt;
         
       });
+      socket.on('count_freqs', function(resp) {
+        let freq_txt = document.getElementById('freq-count');
+        console.log('Received count', resp);
+        freq_txt.innerHTML = resp.count;
+      })
     </script>
     {%endif%}
 

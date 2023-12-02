@@ -71,8 +71,9 @@ def follow(uid):
     db_inst = current_app.config['DB']['session']
 
     # Making sure the user is valid first
+    usr_inst = friends.login.User.query.filter_by(id=int(uid)).first()
     if not uid.isdigit() or \
-        not friends.login.User.query.filter_by(id=int(uid)).first():
+        not usr_inst:
         return 'Bad Request', 400
     uid = int(uid)
     Blocked = friends.Blocked
@@ -88,17 +89,11 @@ def follow(uid):
         return 'Bad request', 400
     if friends.users_are_friends(uid, current_user.id):
         Friend = friends.Friend
-        print('here1')
-        print(friends.users_are_friends(uid, current_user))
         f_inst = Friend.query.filter(and_(Friend.user1 == uid, Friend.user2 == current_user.id)).first()
-        print(f_inst)
         if not f_inst:
             f_inst = Friend.query.filter(and_(Friend.user1 == current_user.id, Friend.user2 == uid)).first()
-        print('here2')
-        print(f_inst)
         db_inst.delete(f_inst)
         db_inst.commit()
-        print('here3')
         return redirect(f'/users/{uid}')
     # Checking to see whether this is for accepting the follow request
     FriendRequest = friends.FriendRequest
@@ -120,6 +115,14 @@ def follow(uid):
             db_inst.delete(curf)
         else:
             db_inst.add(f)
+            print('here', friends.count_friend_requests(usr_inst.id, True))
+            room = current_app.config['SOCKET_SIDS'].get(usr_inst.username)
+            if room:
+                current_app.config['SOCKETIO'].emit(
+                    'count_freqs',
+                    {'count': friends.count_friend_requests(usr_inst.id, True)},
+                    room=room
+                )
     db_inst.commit()
     return redirect(f'/users/{uid}')
 
