@@ -251,5 +251,11 @@
         make_next_move();
         draw_turn();
     }
+    function fast_forward()
+    {
+        if (waiting_time == 5000) waiting_time = 500;
+        else waiting_time = 5000;
+    }
 </script>
+<button class="btn btn-primary mb-3" onclick="fast_forward()">(>>/<<)</button>
 {%endblock%}
