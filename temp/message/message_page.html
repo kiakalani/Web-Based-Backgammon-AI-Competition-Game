@@ -26,7 +26,9 @@
         socket.emit('seen', {sender: '{{receiver_id}}'});
     });
     socket.on('receive', function(resp) {
-        if (resp.sender == "{{receiver_name}}") {
+        if (resp.sender == parseInt("{{receiver_id}}")) {
+            console.log('here?')
+            
             document.getElementById('message-contents').innerHTML += `<div class="alert alert-info" role="alert">{{receiver_name}}: ${resp.message}</div>`;
         }
         socket.emit('seen', {sender: resp.sender});
