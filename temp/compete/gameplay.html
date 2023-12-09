@@ -1,6 +1,8 @@
 {%extends 'template.html'%}
 
 {%block body_additions%}
+<h1 id="competition-header"></h1>
+<h3 id="score-count"></h3>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.js"></script>
 <script>
     /**
@@ -47,6 +49,7 @@
      * This value indicates which player is playing right now
      */
     let turn = null;
+    let paused = false;
 
     /**
      * Waiting time for showing the next move in milliseconds
@@ -145,11 +148,12 @@
      */
     function draw_names()
     {
-        let x = page_x / 2;
-        let y = (page_y / 2)  + (page_y / 10);
-        fill('white');
+        // let x = page_x / 2;
+        // let y = (page_y / 2)  + (page_y / 10);
+        // fill('white');
         let render_str = gameplay['colors']['white'] + ' (white) VS  ' + gameplay['colors']['black'] + ' (black)';
-        text(render_str, x - render_str.length * 4, y);
+        document.getElementById('competition-header').innerHTML = render_str;
+        // text(render_str, x - render_str.length * 4, y);
     }
     /**
      * Draws how many pieces have been hit for each player
@@ -205,12 +209,8 @@
      */
     function draw_scores()
     {
-        let x = page_x / 2;
-        let y = page_y / 3;
-
-        fill('black');
         let cont = 'Score: White ' + scores['white'] + " - " + 'Black ' + scores['black'];
-        text(cont, x - cont.length * 4, y);
+        document.getElementById('score-count').innerHTML = cont;
     }
 
     /**
@@ -262,7 +262,7 @@
      */
     function make_next_move()
     {
-        if (current_round != gameplay.rounds.length)
+        if (!paused && current_round != gameplay.rounds.length)
             move_time += deltaTime;
         if (move_time > waiting_time) {
             let c_round = gameplay.rounds[current_round];
@@ -274,6 +274,8 @@
                 current_move = 0;
                 current_round++;
                 scores[c_round.winner] += winning_score();
+                draw_scores();
+
                 setup_board();
 
             }
@@ -281,17 +283,19 @@
         }
 
     }
+
     function setup() {
         createCanvas(page_x, page_y);
         setup_board();
+        draw_names();
+        draw_scores();
     }
+
     function draw() {
         background(100);
         draw_board();
-        draw_names();
         draw_hits();
         draw_dies();
-        draw_scores();
         make_next_move();
         draw_turn();
     }
@@ -300,6 +304,12 @@
         if (waiting_time == 5000) waiting_time = 500;
         else waiting_time = 5000;
     }
+    function pause_game()
+    {
+        paused = !paused;
+    }
 </script>
-<button class="btn btn-primary mb-3" onclick="fast_forward()">(>>/<<)</button>
+<button class="btn btn-primary mb-3" onclick="fast_forward()">Fast Forward</button>
+<button class="btn btn-primary mb-3" onclick="pause_game()">Pause</button>
+
 {%endblock%}
