@@ -213,6 +213,21 @@
         document.getElementById('score-count').innerHTML = cont;
     }
 
+    let start_moves = [];
+
+    function draw_start_moves() {
+        start_moves.forEach(function(s) {
+            let xpos = page_x /2 , ypos = page_y / 2;
+            if (s != -1 && s != 24) {
+                xpos = board_positions[s].x3;
+                ypos = board_positions[s].y3;
+            }
+            fill('yellow');
+            triangle(xpos - 10, ypos -10, xpos + 10, ypos - 10, xpos, s > 11 ? ypos - 20 : ypos);
+
+        })
+    }
+
     /**
      * A function that makes the provided move to it
      */
@@ -221,8 +236,10 @@
         let direction = move.color == 'white' ? -1 : 1;
         dies = move.dies;
         turn = move.color;
+        start_moves = [];
         move.moves.forEach(function(m) {
             let start = parseInt(Object.keys(m)[0]);
+            start_moves.push(start);
             let finish = parseInt(start) + (m[start] * direction);
             // decreasing the number of hits here
             if (start == -1 || start == 24) {
@@ -275,7 +292,7 @@
                 current_round++;
                 scores[c_round.winner] += winning_score();
                 draw_scores();
-
+                start_moves = [];
                 setup_board();
 
             }
@@ -298,6 +315,7 @@
         draw_dies();
         make_next_move();
         draw_turn();
+        draw_start_moves();
     }
     function fast_forward()
     {
