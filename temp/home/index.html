@@ -1,12 +1,12 @@
 {% extends 'template.html' %}
 
 {%block body_additions%}
-    <h1>Hello, world!</h1>
     {%if user.is_anonymous:%}
-    <a href="/auth/signin">Login</a>
-    <a href="/auth/signup">Sign Up</a>
+    <h3>Welcome to Web-Based Backgammon AI Competition Game!</h3>
+    <a class="btn btn-primary" href="/auth/signin">Login</a>
+    <a class="btn btn-primary" href="/auth/signup">Sign Up</a>
     {%else:%}
     <h3>Welcome {{user.username}}!</h3>
-    <a href="/auth/signout">Sign Out</a>
+    <a class="btn btn-primary" href="/auth/signout">Sign Out</a>
     {%endif%}
 {%endblock%}

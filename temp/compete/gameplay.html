@@ -187,6 +187,7 @@
             fill('white');
             square(x + i * 30, y, 30);
             fill('black');
+            textSize(10);
             text(dies[i] + '', x + i * 30 + 10, y + 15);
         }
     }
@@ -196,10 +197,11 @@
     {
         if (turn != null)
         {
-            let cont = "It's " + turn + "'s turn";
-            let x = page_x / 2;
-            let y = page_y / 1.3;
+            let cont = turn + ' Played'
+            let x = page_x / 2.3;
+            let y = page_y / 1.7;
             fill(turn);
+            textSize(25)
             text(cont, x - cont.length * 4, y);
         }
         
@@ -270,7 +272,6 @@
         for (let i = 0; i < board.length; ++i) {
             counter += board[i].length;
         }
-        console.log('Remaining pieces are', counter);
         if (counter == 15) {return 2;}
         return 1;
     }
