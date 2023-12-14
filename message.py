@@ -186,12 +186,15 @@ def message_by_id(uid):
     """
 
     if current_user.is_anonymous:
-        return redirect('/')
+        return redirect('/auth/signin')
 
     if not uid.isdigit():
         return 'Bad Request', 400
 
     uid = int(uid)
+    if not friends.users_are_friends(uid, current_user.id):
+        return 'Bad request', 400
+
     dest_user = User.query.filter(User.id == uid).first()
 
     if not dest_user:

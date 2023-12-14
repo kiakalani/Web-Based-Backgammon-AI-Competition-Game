@@ -45,7 +45,6 @@ def file_is_valid(extension: str, text: str) -> bool:
     :param: text: The text components of the file
     :return: True if the file is valid; otherwise false.
     """
-    # TODO: Run a competition and make sure the AI is functioning
     # as expected
     if extension != 'py':
         return False
@@ -59,6 +58,8 @@ def get_ai_name(code: str) -> str:
     """
     Getter for the name of the AI from the
     source code.
+    :param: code: the source code that contains the
+    name of AI.
     :return: the name of the AI
     """
     pattern = re.compile(r'super\(\)\.__init__\((?P<ai_name>.+)\)')
@@ -95,15 +96,12 @@ def write_ai_to_db(owner: int, name: str, code: str) -> bool:
 
 
 
-
-@bp.route('/', methods=['GET'])
-def search_page():
-    """
-    Displays the AIs currently available to compete against
-    """
-    return "", 200
 @bp.route('/sample.py', methods=['GET'])
 def get_base_ai():
+    """
+    Provides the sample.py file for users
+    to write their implementation based off of.
+    """
     if current_user.is_anonymous:
         return redirect('/auth/signin')
     path = os.path.join('game_logic', 'sample.py')
@@ -136,8 +134,6 @@ def upload_ai():
             return 'Success', 200
         return 'Bad Request', 400
     
-    print(request.form)
-
     return 'Bad Request', 400
 
 @bp.route('/remove', methods=['POST'])
@@ -149,7 +145,7 @@ def remove_ai():
     if current_user.is_anonymous:
         return redirect('/auth/signin')
     if 'removed_ai' not in request.form:
-        return 'Bad Request', 404
+        return 'Bad Request', 400
     removed = request.form['removed_ai']
     
     session = current_app.config['DB']['session']
@@ -161,8 +157,14 @@ def remove_ai():
     Competition = compete.Competition
     items = session.query(Competition).filter(
         or_(
-            and_((Competition.winner_name == removed), (Competition.winner_owner == current_user.id)),
-            and_(Competition.loser_name == removed, Competition.loser_owner == current_user.id)
+            and_(
+                (Competition.winner_name == removed),
+                (Competition.winner_owner == current_user.id)
+            ),
+            and_(
+                Competition.loser_name == removed,
+                Competition.loser_owner == current_user.id
+            )
         )
     ).all()
     for i in items:
@@ -170,4 +172,3 @@ def remove_ai():
     session.delete(obj)
     session.commit()
     return redirect('/account')
-

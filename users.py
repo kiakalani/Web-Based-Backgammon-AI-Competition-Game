@@ -6,20 +6,20 @@ import message
 bp = Blueprint('users', __name__, url_prefix='/users')
 from sqlalchemy import and_, or_
 
-# Include all the users who did not block the user
-# Make query working
-@bp.route('/', methods=['GET'])
-def index():
-    # Getting the objects
-    query = request.args.get('query')
-    users = []
-    if query:
-        Blocked = friends.Blocked
-        User = friends.login.User
-        blocked_by = Blocked.query.filter_by(blocked_user=current_user.id).all()
-        users = User.query.filter(User.username.like(f'%{query}%')).all()
-        users = [u for u in users if u.id not in blocked_by and u != current_user]
-    return render_template('/users/index.html', users=users)
+# # Include all the users who did not block the user
+# # Make query working
+# @bp.route('/', methods=['GET'])
+# def index():
+#     # Getting the objects
+#     query = request.args.get('query')
+#     users = []
+#     if query:
+#         Blocked = friends.Blocked
+#         User = friends.login.User
+#         blocked_by = Blocked.query.filter_by(blocked_user=current_user.id).all()
+#         users = User.query.filter(User.username.like(f'%{query}%')).all()
+#         users = [u for u in users if u.id not in blocked_by and u != current_user]
+#     return render_template('/users/index.html', users=users)
 
 def get_follow_txt(user1: int, user2: int) -> str:
 

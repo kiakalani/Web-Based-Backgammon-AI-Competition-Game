@@ -63,7 +63,7 @@ def create_app():
         import users
         app.register_blueprint(users.bp)
 
-        # Setting up the socket for messaging
+        # Setting up the socket for messaging and notifications
         @socketio.on('connect')
         def connection(auth):
             if current_user.is_anonymous:

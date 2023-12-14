@@ -222,6 +222,8 @@ def get_win_loss_records():
 
 @bp.route('/leaderboard', methods=['GET'])
 def get_leaderboard():
+    if current_user.is_anonymous:
+        return redirect('/auth/signin')
     # Provide the name and number of wins and number of losses
     win_loss_records = get_win_loss_records()
     return render_template('compete/leaderboard.html', win_loss_records=win_loss_records, user=current_user)
