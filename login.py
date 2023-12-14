@@ -3,14 +3,12 @@
 # the web application. In addition, it contains
 # the model for the users inside the database.
 
-from flask import current_app, Blueprint, redirect, render_template, \
-request
-
-from flask_login import LoginManager, UserMixin, current_user, login_user, \
-    logout_user
-
-from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask import current_app, Blueprint,\
+    redirect, render_template, request
+from flask_login import LoginManager, \
+    UserMixin, current_user, login_user, logout_user
+from werkzeug.security import generate_password_hash,\
+    check_password_hash
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import IntegrityError
 

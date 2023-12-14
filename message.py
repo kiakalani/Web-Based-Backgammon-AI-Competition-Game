@@ -14,7 +14,6 @@ from flask import current_app
 from sqlalchemy import Column, String, text,\
     Integer, and_, or_, Boolean, not_, update
 
-
 from login import User
 import friends
 
@@ -205,8 +204,14 @@ def message_by_id(uid):
 
     messages = Message.query.filter(
         or_(
-            and_(Message.sender == current_user.id, Message.receiver == uid),
-            and_(Message.sender == uid, Message.receiver == current_user.id)
+            and_(
+                Message.sender == current_user.id,
+                Message.receiver == uid
+            ),
+            and_(
+                Message.sender == uid,
+                Message.receiver == current_user.id
+            )
         )
     )
 
@@ -225,4 +230,25 @@ def flush_messages(user1: int, user2: int) -> None:
     :param: user1: the uid of the first user
     :param: user2: the uid of the second user
     """
-    pass
+
+    # Getting all of the messages that were exchanged
+    # between the two users
+    all_messages = Message.query.filter(
+        or_(
+            and_(
+                Message.sender == user1,
+                Message.receiver == user2
+            ),
+            and_(
+                Message.sender == user2,
+                Message.receiver == user1
+            )
+        )
+    ).all()
+
+    # Deleting all of the messages
+    db_instance = current_app.config['DB']['session']
+    for m in all_messages:
+        db_instance.delete(m)
+    db_instance.commit()
+

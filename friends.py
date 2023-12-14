@@ -1,7 +1,15 @@
+"""
+Author: Kia Kalani
+Student ID: 101145220
+This module is responsible for handling the
+operations that correspond to friendship management.
+"""
+
 from flask import Blueprint, request, render_template, redirect,\
     current_app
 from flask_login import current_user
 from sqlalchemy import String, Integer, Column, and_, or_
+
 import login
 import users
 

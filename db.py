@@ -1,8 +1,12 @@
-# Author: Kia Kalani
-# This module is responsible for implementing the database
-# instance that would be used throughout the project
+"""
+Author: Kia Kalani
+Student ID: 101145220
+This module is responsible for implementing the database
+instance that would be used throughout the project
+"""
 
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 
@@ -45,7 +49,6 @@ def load_db(app):
     :return: None
     """
 
-    # TODO: Add all database models here
     from login import User
     from ai_management import AI
     from message import Message

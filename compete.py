@@ -4,19 +4,20 @@ Student ID: 101145220
 This module is responsible for running the competition between
 the given two AIs and store the outcome of the competition.
 """
+import base64
+import os
+import json
+
 from flask import Blueprint, request, render_template, redirect, jsonify
 from flask_login import current_user
 from flask import current_app
-import base64
-import os
 from sqlalchemy import Integer, String, Column, and_, or_
-import json
 from sqlalchemy.exc import IntegrityError
+
 import ai_management
 from login import User
-import json
-
 import login
+
 class Competition(current_app.config['DB']['base']):
     """
     A class containing the model for the users
@@ -222,6 +223,10 @@ def get_win_loss_records():
 
 @bp.route('/leaderboard', methods=['GET'])
 def get_leaderboard():
+    """
+    A function that provides the leaderboard
+    to the user.
+    """
     if current_user.is_anonymous:
         return redirect('/auth/signin')
     # Provide the name and number of wins and number of losses
