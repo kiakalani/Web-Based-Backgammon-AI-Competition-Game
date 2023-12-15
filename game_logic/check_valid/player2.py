@@ -9,7 +9,7 @@ class AIPlayer(Player):
         """
         Constructor
         """
-        super().__init__("Your AI Name Here")
+        super().__init__("Player 2")
 
     def make_a_mock_move(self, move: {int: int}, board: [[str]], hits: {str: int}, color: str) -> None:
         """
