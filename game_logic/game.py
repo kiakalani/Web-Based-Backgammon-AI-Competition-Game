@@ -1,13 +1,39 @@
+"""
+Author: Kia Kalani
+Student ID: 101145220
+This module deals with running the
+competition between the two provided
+AIs. They would be stored in files named
+player1 and player2 and ran in a container
+to ensure the security of the procedure.
+"""
+
+import json
+import signal
+from random import randint
+
 import player1
 import player2
 from player import Player
-from random import randint
-import json
-import signal
+
 def timeout_exception(self, signum, frame):
+    """
+    A method for providing the timeout exception
+    if user's implementation takes more than a second
+    """
+
     raise Exception('Timeout occured')
+
 class Game:
+    """
+    This class will run the competition between two AIs.
+    """
+
     def __init__(self) -> None:
+        """
+        Constructor
+        """
+
         self.__player1 = player1.AIPlayer()
         self.__player2 = player2.AIPlayer()
         self.__board = []
@@ -21,6 +47,7 @@ class Game:
         A helper function to reset the board before starting
         the round
         """
+
         empty_board = [[] for i in range(24)]
         for _ in range(2):
             empty_board[0].append('black')
@@ -37,33 +64,61 @@ class Game:
 
     def __is_finishing(self, color: str, board: [[str]]) -> bool:
         """
-        Check to see if the player is finishing up with their pieces
+        Check to see if the player is finishing up with their pieces.
+        :param: color: The current player's color.
+        :param: board: The current board in the game.
+        :return: True if the player is finishing; otherwise false.
         """
+
         for i in range(18):
             index = i if color == 'black' else 23 - i
             if len(board[index]) != 0 and color == board[index][0]:
                 return False
+
         return True
 
     def get_winner(self) -> str:
         """
-        Returns the winner of the game
+        Returns the winner of the game.
+        :return: a string mentioning the color of the winner.
         """
+
         num_pieces = {'white': 0, 'black': 0}
         for i in range(24):
             cur_len = len(self.__board[i])
 
             if cur_len != 0:
                 num_pieces[self.__board[i][0]] += cur_len
+
         if num_pieces['white'] == 0:
             return 'white'
         elif num_pieces['black'] == 0:
             return 'black'
+    
         return None
                 
-    def move_is_valid(self, start: int, finish: int, color: str, board: [[str]], dice, hits=None) -> bool:
+    def move_is_valid(
+        self, start: int, finish: int,
+        color: str, board: [[str]], dice, hits=None
+    ) -> bool:
+        """
+        A method that specifies whether the move that the player is
+        trying to make is valid.
+        :param: start: The start position of the piece.
+        :param: finish: The end position of the move.
+        :param: color: The color of the current player.
+        :param: board: The current board.
+        :param: dice: The dice that the player rolled.
+        :param: hits: Would specify whether the player has pieces
+        that are hit and need to be moved first.
+        :return: True if the move is valid; otherwise false.
+        """
+
         if hits == None:
+            # This means, we are using the function for 
+            # direct instance of the board.
             hits = self.__hits
+
         # This takes care of verifying whether the piece has been hit
         if hits[color] != 0:
             if color == 'black':
@@ -72,12 +127,15 @@ class Game:
             elif color == 'white':
                 if start != 24:
                     return False
+
             # This means the hit piece can be reloacted to correct position
             if len(board[finish]) == 0 or board[finish][0] == color:
                 return True
             elif len(board[finish]) == 1 and board[finish][0] != color:
                 return True
+
             return False
+
         if finish >= 0 and finish < 24 and start != 24 and start != -1:
         # This means a valid piece has been selected
             if len(board[start]) != 0 and board[start][0] == color:
@@ -86,10 +144,9 @@ class Game:
                 elif len(board[finish]) == 1 and board[finish][0] != color:
                     # This would be a hit
                     return True
-                # else:
-                #     return False
             else:
                 return False
+
         if self.__is_finishing(color, board):
             direction = (1 if color == 'black' else -1)
             # This means the move is exact
@@ -104,25 +161,38 @@ class Game:
                     if len(board[i]) != 0 and board[i][0] == color:
                         return False
             return True
+
         return False
 
     def has_valid_moves(self, color: str, dice: int, board=None, hits=None) -> bool:
         """
         This function returns true if there is a valid move
-        with the given dice for the player otherwise false
+        with the given dice for the player otherwise false.
+        :param: color: The color of the current player
+        :param: dice: The specific dice the current player has rolled.
+        :param: board: The board instance.
+        :param: hits: The number of hits each player has associated with them.
         """
+
+        # If not specified, that means we are dealing with the
+        # direct instances.
         if board == None:
             board = self.__board
         if hits == None:
             hits = self.__hits
+
         direction = 1 if color == 'black' else -1
         if hits[color] != 0:
+            # If they are hit, they have to move their hit pieces first.
+            # If they can't, they have no valid moves for this dice.
             pos = (dice * direction) + (-1 if color == 'black' else 24)
             if len(board[pos]) != 0 and board[pos][0] != color:
                 return False
             return True
         else:
             for i in range(24):
+                # Looping through all of the positions and checking whether there
+                # is a piece that has a valid move for the rolled dice.
                 if len(board[i]) != 0 and board[i][0] == color:
                     if self.move_is_valid(i, i + dice * direction, color, board, dice):
                         return True
@@ -131,15 +201,26 @@ class Game:
                 
     def make_move(self, move:{int:int}, color: str, dice: int, board=None, hits=None) -> None:
         """
-        This function is responsible for making a move by the given parameters
+        This function is responsible for making a move by the given parameters.
+        :param: move: A dictionary where key is the start position and value is the
+            dice the piece is going to move by.
+        :param: color: The color of the current player.
+        :param: dice: The current dice the player rolled.
+        :param: board: The board instance.
+        :param: hits: The total hits each player has
         """
+
+        # Making sure appropriate instances are selected.
         if board == None:
             board = self.__board
         if hits == None:
             hits = self.__hits
+        
         if len(move) != 1:
             # this means the input is invalid
             return
+        
+
         for start, d in move.items():
             finish = start + d * (1 if color == 'black' else -1)
             finish = max(-1, min(24, finish))
@@ -169,8 +250,10 @@ class Game:
 
     def get_board(self) -> [[str]]:
         """
-        This function returns a copy of the board
+        This function returns a copy of the board.
+        :return: a copy of the board
         """
+
         return [[b for b in i] for i in self.__board]
 
     def debug_board(self) -> None:
@@ -194,52 +277,93 @@ class Game:
         print('Black: ', self.__hits['black'], 'White:', self.__hits['white'])
 
     def __dies_valid(self, dies: [int], moves: [{int:int}]):
+        """
+        A method to validate whether the moves made
+        are corresponding to valid dies.
+        """
+
         if len(moves) > len(dies):
             return False
+
         for m in moves:
             for move, dice in m.items():
                 if not dice in dies:
                     return False
         return True
     
-    def __valid_moves_made(self, moves, dies, color, hits):
+    def __valid_moves_made(
+        self, moves: [{int:int}], dies: [int], color: str, hits: {str:int}
+    ):
+        """
+        A helper function to check whether valid moves
+        are made or not.
+        """
+
+        # Creating copies for not modifying the originals
         board_cp = self.get_board()
         dies_cp = [d for d in dies]
+
         for m in moves:
             if len(m) != 1:
                 return False
             for move, dice in m.items():
                 finish = move + (dice * (1 if color == 'black' else -1))
                 if not self.move_is_valid(move, finish, color, board_cp, dice, hits):
+                    # The player is trying to make an invalid move.
                     return False
                 self.make_move(m, color, dice, board_cp, hits)
                 dies_cp.remove(dice)
+
         for d in dies_cp:
             if self.has_valid_moves(color, d, board_cp, hits):
+                # That means the player is missing a move
                 return False
         return True
     
 
-    def make_player_move(self, player, color: str, dies: [int], hits: int, game_outcome: dict):
+    def make_player_move(
+        self, player, color: str, dies: [int], hits: int, game_outcome: dict
+    ) -> bool:
+        """
+        A method to do all the necessary checks and make the move for
+        the player.
+        :param: player: The player instance.
+        :param: color: The player's color
+        :param: dies: The dies the player has rolled.
+        :param: hits: The number of hits of the current player's pieces.
+        :param: game_outcome: A dictionary to track the moves made in the
+        game.
+        :return: True if the move has been made successfully; otherwise False
+        """
+
         # Getting the moves of the player
         signal.signal(signal.SIGALRM, timeout_exception)
         signal.alarm(1)
         try:
+            # Making sure making a move doesn't take more than a second
             moves = player.make_a_move(self.get_board(), [d for d in dies], color, hits)
         except Exception as e:
-            raise e
+            return False
+        
+        # Check to see if the player plays the dies associated with them
         if not self.__dies_valid(dies, moves):
             return False
+        # Check to see if the player is trying to make valid moves
         if not self.__valid_moves_made(moves, dies, color, {k: v for k, v in self.__hits.items()}):
             return False
+        
+        # Playing the moves on the board since everything is validated
         for m in moves:
             for _, dice, in m.items():
                 self.make_move(m, color, dice)
+        
+        # Tracking the move the player made
         game_outcome['rounds'][-1]['moves'].append({
             'color': color,
             'dies': dies,
             'moves': moves
         })
+
         return True
 
     def roll_dies(self) -> [int]:
@@ -281,9 +405,12 @@ class Game:
             if ret_dict['white'] != self.__player1 else self.__player2
         return ret_dict
 
-    def run(self) -> str:
+    def run(self) -> dict:
         """
-        This method would specify who the winner is.
+        This method would run the game and provide its result.
+        :return: A dictionary containing the winner, loser, the scores,
+        the colors associated with each player, and all the moves made
+        for each round.
         """
         game_outcome = {
             'scores': {
