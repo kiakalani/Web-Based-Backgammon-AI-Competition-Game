@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 import ai_management
 from login import User
 import login
+import friends
 
 class Competition(current_app.config['DB']['base']):
     """
@@ -365,6 +366,9 @@ def provide_ai_names():
         return jsonify([])
 
     uid = uid.id
+    if not friends.users_are_friends(current_user.id, uid):
+        return jsonify([])
+
     AI = ai_management.AI
     ais = AI.query.filter(AI.owner == uid).all()
     ais = [a.name for a in ais]
