@@ -35,6 +35,7 @@ class FriendRequest(current_app.config['DB']['base']):
     """
     A table for friend requests
     """
+
     __tablename__ = 'friendrequest'
     from_user = Column(Integer, primary_key=True)
     to_user = Column(Integer, primary_key=True)
@@ -50,6 +51,7 @@ class Blocked(current_app.config['DB']['base']):
     """
     A table for storing the blocked users
     """
+
     __tablename__ = 'blocked'
     user = Column(Integer, primary_key=True)
     blocked_user = Column(Integer, primary_key=True)

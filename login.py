@@ -1,7 +1,10 @@
-# Author: Kia Kalani
-# This module handles the authorization to access
-# the web application. In addition, it contains
-# the model for the users inside the database.
+"""
+Author: Kia Kalani
+Student ID: 101145220
+This module handles the authorization to access
+the web application. In addition, it contains the
+model for the users in the database.
+"""
 
 from flask import current_app, Blueprint,\
     redirect, render_template, request
@@ -18,6 +21,7 @@ class User(UserMixin, current_app.config['DB']['base']):
     """
     A class containing the model for the users
     """
+
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
@@ -25,7 +29,17 @@ class User(UserMixin, current_app.config['DB']['base']):
     email = Column(String, unique=True)
     password = Column(String)
 
-    def __init__(self, username, name, email, password) -> None:
+    def __init__(
+        self,
+        username: str,
+        name: str,
+        email: str,
+        password: str
+    ) -> None:
+        """
+        Constructor
+        """
+
         self.username = username
         self.name = name
         self.email = email
@@ -57,8 +71,10 @@ def register():
     :return: The server's response about the status of
     the registration
     """
+
     if current_user and current_user.is_authenticated:
         return redirect('/')
+
     if request.method == 'POST':
         form = request.form
         # Receiving the parameters
@@ -66,12 +82,19 @@ def register():
         name = form.get('name')
         email = form.get('email')
         password = form.get('password')
+
         # Error checking the parameters
         if not username or not name or not email or not password:
             return '400 Bad request', 400
         
         # Creating the user instance
-        user = User(username, name, email, generate_password_hash(password))
+        user = User(
+            username,
+            name,
+            email,
+            generate_password_hash(password)
+        )
+
         db = current_app.config['DB']
 
         db['session'].add(user)
@@ -81,11 +104,17 @@ def register():
             db['session'].commit()
         except IntegrityError as e:
             reason = str(e.orig).split('.')[-1]
-            return render_template('auth/register_message.html', alert_type='danger', 
-                message=f'Failed to register user. Reason: This {reason} is already in use'), 400
+            return render_template(
+                'auth/register_message.html',
+                alert_type='danger', 
+                message=f'Failed to register user. Reason: This {reason} is already in use'
+            ), 400
 
-        return render_template('auth/register_message.html', alert_type='success',
-            message=f'Successfully registered user {username}. Please try to Sign In')
+        return render_template(
+            'auth/register_message.html',
+            alert_type='success',
+            message=f'Successfully registered user {username}. Please try to Sign In'
+        )
 
     return render_template('auth/register.html')
 
@@ -96,23 +125,39 @@ def login():
     An endpoint for logging in.
     :return: The server's response
     """
+
     # Means they should not access this page. So we redirect them to home
     if current_user and current_user.is_authenticated:
         return redirect('/')
+
     # Logging in the user if the credentials are valid
     if request.method == 'POST':
         form = request.form
         username = form.get('username')
         password = form.get('password')
+
         if not username or not password:
             return 'Bad request', 400
-        user = User.query.filter(User.username == username).first()
+
+        user = User.query.filter(
+            User.username == username
+        ).first()
+
         if not user:
-            return render_template('auth/register_message.html', alert_type='danger', message=f'User {username} Does not exist.')
-        password_correct = check_password_hash(user.password, password)
+            return render_template(
+                'auth/register_message.html',
+                alert_type='danger',
+                message=f'User {username} Does not exist.'
+            )
+
+        password_correct = check_password_hash(
+            user.password, password
+        )
+
         if password_correct:
             login_user(user)
             return redirect('/')
+
     return render_template('auth/login.html')
 
 @bp.route('/signout', methods=['GET'])
@@ -120,9 +165,12 @@ def logout():
     """
     An endpoint for logging out the user
     """
+
     # Anonymous users are not logged in. So there would be no access.
     if current_user.is_anonymous:
         return redirect('/')
+
     logout_user()
+
     return redirect('/')
     

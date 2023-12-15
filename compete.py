@@ -415,7 +415,7 @@ def main_gameplay_pg():
     gameplays=gameplays, user=current_user)
 
 @bp.route('/gameplay/<id>', methods=['GET'])
-def watch_game(id):
+def watch_game(id: str):
     """
     A method that provides the necessary data
     for replaying the moves that AIs made for

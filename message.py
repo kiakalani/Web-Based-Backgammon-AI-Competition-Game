@@ -24,6 +24,7 @@ class Message(current_app.config['DB']['base']):
     """
     The database model for messages
     """
+
     __tablename__ = 'message'
     sender = Column(Integer)
     receiver = Column(Integer)
@@ -37,6 +38,7 @@ class Message(current_app.config['DB']['base']):
         """
         Constructor for setting the necessary values
         """
+
         self.sender = sender
         self.receiver = receiver
         self.text = text
@@ -79,12 +81,18 @@ def count_unseen_messages(sender, receiver) -> int:
             not_(Message.seen)
         )
     ).all()
+
     return len(items)
 
 def get_count_all_unseen(receiver: int, inc=False) -> str:
     """
     A method to provide the count of all unseen messages for
     a given user.
+    :param: receiver: the id of the user who received the
+    message.
+    :param: inc: if true, this would increment the value
+    before returning it.
+    A string that can be from 0 to +99.
     """
 
     unseens = len(Message.query.filter(
@@ -93,21 +101,26 @@ def get_count_all_unseen(receiver: int, inc=False) -> str:
             not_(Message.seen)
         )
     ).all())
+
     if inc:
         unseens += 1
+
     if unseens > 99:
         return '+99'
+
     return str(unseens)
 
 @current_app.config['SOCKETIO'].on('message')
-def send_msg(data):
+def send_msg(data: dict):
     """
     A function for updating messaging live and storing it into the database
     :param: data: the dictionary containing the information
     client has sent over to the server.
     """
+
     if current_user.is_anonymous:
         return
+
     # Necessary components about the message
     receiver = data.get('receiver')
     message = data.get('message')
@@ -134,6 +147,7 @@ def send_msg(data):
             },
             room=current_app.config['SOCKET_SIDS'][receiver]
         )
+
     # get the user corresponding to receiver
     # Storing the message in the database
     db_instance = current_app.config['DB']['session']
@@ -142,15 +156,18 @@ def send_msg(data):
     db_instance.commit()
 
 @current_app.config['SOCKETIO'].on('seen')
-def set_the_seen(data):
+def set_the_seen(data: dict):
     """
     Invoked when users open the unread messages.
     :param: data: the data sent over by the client.
     """
+
     if current_user.is_anonymous:
         return
+
     sender = data['sender']
     set_seen(sender, current_user.id)
+
     # we have to update this on seen as well
     current_app.config['SOCKETIO'].emit(
         'unreads',
@@ -167,18 +184,28 @@ def messages():
     The index page for the given user to see who messaged
     them.
     """
+
     if current_user.is_anonymous:
         return redirect('/auth/signin')
+
     friend_collection = friends.get_friends(current_user.id)
+
+    # Getting the count of unseen messages corresponding
+    # to each user
     count_unseen = {
         i.id: count_unseen_messages(i.id, current_user.id)\
             for i in friend_collection
     }
-    return render_template('message/index.html', user=current_user, 
-                           users=friend_collection, unseen = count_unseen)
+
+    return render_template(
+        'message/index.html',
+        user=current_user, 
+        users=friend_collection,
+        unseen = count_unseen
+    )
 
 @bp.route('/<uid>')
-def message_by_id(uid):
+def message_by_id(uid: str):
     """
     Opens the messaging room for given two users.
     :param: uid: the id of the destination user.
