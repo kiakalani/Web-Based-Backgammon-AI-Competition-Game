@@ -35,7 +35,6 @@ def create_db(app):
         'session': db_session,
         'base': base
     }
-
     # On app exit remove db instance
     @app.teardown_appcontext
     def remove_session(exception=None):

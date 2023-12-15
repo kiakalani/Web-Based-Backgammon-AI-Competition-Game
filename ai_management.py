@@ -62,8 +62,10 @@ def get_ai_name(code: str) -> str:
     name of AI.
     :return: the name of the AI
     """
+
     pattern = re.compile(r'super\(\)\.__init__\((?P<ai_name>.+)\)')
     m = None
+
     for line in code.splitlines():
         line = line.strip()
         m = pattern.match(line)
@@ -80,15 +82,29 @@ def write_ai_to_db(owner: int, name: str, code: str) -> bool:
     :return: True if the writing process was
     successful; otherwise false
     """
+
     name = get_ai_name(code)
     # Means invalid name is provided
     if not name or len(name) <= 2:
         return False
+
     name = name[1:-1]
-    if AI.query.filter(and_(AI.owner == owner, AI.name == name)).first():
+
+    if AI.query.filter(
+        and_(
+            AI.owner == owner,
+            AI.name == name
+        )
+    ).first():
         # This would mean that this AI already exists
         return False
-    new_ai = AI(name, owner, base64.b64encode(bytes(code, encoding='utf-8')).decode())
+
+    new_ai = AI(
+        name,
+        owner,
+        base64.b64encode(bytes(code, encoding='utf-8')).decode()
+    )
+
     current_app.config['DB']['session'].add(new_ai)
     current_app.config['DB']['session'].commit()
     return True
@@ -102,11 +118,15 @@ def get_base_ai():
     Provides the sample.py file for users
     to write their implementation based off of.
     """
+
     if current_user.is_anonymous:
         return redirect('/auth/signin')
+
     path = os.path.join('game_logic', 'sample.py')
+
     if os.path.exists(path):
         return send_file(path)
+
     return 'Bad request', 400
 
 @bp.route('/upload', methods=['POST'])
@@ -115,13 +135,19 @@ def upload_ai():
     Invoked when the post request is made to the server
     for uploading a new AI.
     """
+
     # This means user has not authenticated. So the request is invalid
     if current_user.is_anonymous:
         return redirect('/auth/signin')
+
     # If file is missing, provide a bad request response.
     if 'file' not in request.files:
         return 'Bad Request', 400
+
+    # should be .py
     file_extension = request.files['file'].filename.split('.')[-1].lower()
+
+    # The text from the file
     contents = ''
 
     # If encoding is not utf-8, the file would be invalid
@@ -144,12 +170,15 @@ def remove_ai():
     
     if current_user.is_anonymous:
         return redirect('/auth/signin')
+
     if 'removed_ai' not in request.form:
         return 'Bad Request', 400
+
     removed = request.form['removed_ai']
     
     session = current_app.config['DB']['session']
     obj = AI.query.filter_by(name=removed).first()
+
     if obj is None:
         return 'Bad Request', 400
 
@@ -167,8 +196,11 @@ def remove_ai():
             )
         )
     ).all()
+
     for i in items:
         session.delete(i)
+
     session.delete(obj)
     session.commit()
+
     return redirect('/account')
