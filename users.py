@@ -34,7 +34,8 @@ def user_page(uid):
         return 'Bad Request', 400
     uid = int(uid)
     if uid == current_user.id:
-        return 'Bad Request', 400
+        return redirect('/account')
+
     Blocked = friends.Blocked
     user = friends.login.User.query.filter_by(id=int(uid)).first()
     if not user or Blocked.query.filter(
