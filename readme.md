@@ -1,7 +1,6 @@
 # Web-Based Backgammon AI Competition Game
 
 ### Kia Kalani
-#### 101145220
 
 ## Required packages/tools for running this project:
 1. Python
